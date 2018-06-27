@@ -42,7 +42,7 @@
     "variables": {},
     "resources": [
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/Microsoft.DocumentDB/databaseAccounts/my-cosmos-db-102032'.",
+            "comments": "",
             "type": "Microsoft.DocumentDB/databaseAccounts",
             "kind": "GlobalDocumentDB",
             "name": "[parameters('databaseAccounts_my_cosmos_db_102032_name_1')]",
@@ -64,7 +64,7 @@
             "dependsOn": []
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/microsoft.insights/components/serverless-asdfasdf'.",
+            "comments": "",
             "type": "microsoft.insights/components",
             "kind": "web",
             "name": "[parameters('components_serverless_asdfasdf_name')]",
@@ -84,7 +84,7 @@
             "dependsOn": []
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/Microsoft.Storage/storageAccounts/serverlessasdfab909'.",
+            "comments": "",
             "type": "Microsoft.Storage/storageAccounts",
             "sku": {
                 "name": "Standard_LRS",
@@ -119,7 +119,7 @@
             "dependsOn": []
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/Microsoft.Storage/storageAccounts/serverlessstorage10293'.",
+            "comments": "",
             "type": "Microsoft.Storage/storageAccounts",
             "sku": {
                 "name": "Standard_GRS",
@@ -155,7 +155,7 @@
             "dependsOn": []
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/Microsoft.Web/serverfarms/EastUSPlan'.",
+            "comments": "",
             "type": "Microsoft.Web/serverfarms",
             "sku": {
                 "name": "Y1",
@@ -182,7 +182,7 @@
             "dependsOn": []
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/Microsoft.Web/sites/serverless-asdfasdf'.",
+            "comments": "",
             "type": "Microsoft.Web/sites",
             "kind": "functionapp",
             "name": "[parameters('sites_serverless_asdfasdf_name')]",
@@ -226,7 +226,7 @@
             ]
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/Microsoft.Web/sites/serverless-asdfasdf/config/web'.",
+            "comments": "",
             "type": "Microsoft.Web/sites/config",
             "name": "[concat(parameters('sites_serverless_asdfasdf_name'), '/', parameters('config_web_name'))]",
             "apiVersion": "2016-08-01",
@@ -345,7 +345,7 @@
             ]
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/2e12fe0d-f133-41c9-884d-d8ce74e6e3da/resourceGroups/serverlessRG/providers/Microsoft.Web/sites/serverless-asdfasdf/hostNameBindings/serverless-asdfasdf.azurewebsites.net'.",
+            "comments": "",
             "type": "Microsoft.Web/sites/hostNameBindings",
             "name": "[concat(parameters('sites_serverless_asdfasdf_name'), '/', parameters('hostNameBindings_serverless_asdfasdf.azurewebsites.net_name'))]",
             "apiVersion": "2016-08-01",
