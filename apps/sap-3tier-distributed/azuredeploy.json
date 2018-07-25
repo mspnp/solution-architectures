@@ -16,10 +16,13 @@
         "Windows Server 2012 Datacenter",
         "Windows Server 2012 R2 Datacenter",
         "Windows Server 2016 Datacenter",
-        "SLES 12",
-        "SLES 12 BYOS",
-        "RHEL 7.2",
-        "Oracle Linux 7.2"
+        "SLES 12 SP2",
+        "SLES 12 SP2 BYOS",
+        "SLES 12 SP3",
+        "SLES 12 SP3 BYOS",
+        "RHEL 7.4",
+        "Oracle Linux 7.3",
+        "Oracle Linux 7.4"
       ],
       "defaultValue": "Windows Server 2012 R2 Datacenter",
       "metadata": {
@@ -121,17 +124,14 @@
         "Plan": {},
         "UsePlan": false
       },
-      "SLES 12": {
-        "sku": "12-SP1",
+      "SLES 12 SP2": {
+        "sku": "12-SP2",
         "offer": "SLES-SAP",
         "publisher": "SUSE",
-        "version": "latest",
-        "OSType": "Linux",
-        "Plan": {},
-        "UsePlan": false
+        "OSType": "Linux"
       },
-      "SLES 12 BYOS": {
-        "sku": "12-SP1",
+      "SLES 12 SP2 BYOS": {
+        "sku": "12-SP2",
         "offer": "SLES-SAP-BYOS",
         "publisher": "SUSE",
         "version": "latest",
@@ -139,17 +139,38 @@
         "Plan": {},
         "UsePlan": false
       },
-      "RHEL 7.2": {
-        "sku": "7.2",
-        "offer": "RHEL",
-        "publisher": "RedHat",
+      "SLES 12 SP3": {
+        "sku": "12-SP3",
+        "offer": "SLES-SAP",
+        "publisher": "SUSE",
+        "OSType": "Linux"
+      },
+      "SLES 12 SP3 BYOS": {
+        "sku": "12-SP3",
+        "offer": "SLES-SAP-BYOS",
+        "publisher": "SUSE",
         "version": "latest",
         "OSType": "Linux",
         "Plan": {},
         "UsePlan": false
       },
-      "Oracle Linux 7.2": {
-        "sku": "7.2",
+      "RHEL 7.4": {
+        "sku": "7.4",
+        "offer": "RHEL-SAP",
+        "publisher": "RedHat",
+        "OSType": "Linux"
+      },
+      "Oracle Linux 7.3": {
+        "sku": "7.3",
+        "offer": "Oracle-Linux",
+        "publisher": "Oracle",
+        "version": "latest",
+        "OSType": "Linux",
+        "Plan": {},
+        "UsePlan": false
+      },
+      "Oracle Linux 7.4": {
+        "sku": "7.4",
         "offer": "Oracle-Linux",
         "publisher": "Oracle",
         "version": "latest",
