@@ -16,11 +16,6 @@
         "Windows Server 2012 Datacenter",
         "Windows Server 2012 R2 Datacenter",
         "Windows Server 2016 Datacenter",
-        "SLES 12 SP2",
-        "SLES 12 SP2 BYOS",
-        "SLES 12 SP3",
-        "SLES 12 SP3 BYOS",
-        "RHEL 7.4",
         "Oracle Linux 7.3",
         "Oracle Linux 7.4"
       ],
@@ -123,42 +118,6 @@
         "OSType": "Windows",
         "Plan": {},
         "UsePlan": false
-      },
-      "SLES 12 SP2": {
-        "sku": "12-SP2",
-        "offer": "SLES-SAP",
-        "publisher": "SUSE",
-        "OSType": "Linux"
-      },
-      "SLES 12 SP2 BYOS": {
-        "sku": "12-SP2",
-        "offer": "SLES-SAP-BYOS",
-        "publisher": "SUSE",
-        "version": "latest",
-        "OSType": "Linux",
-        "Plan": {},
-        "UsePlan": false
-      },
-      "SLES 12 SP3": {
-        "sku": "12-SP3",
-        "offer": "SLES-SAP",
-        "publisher": "SUSE",
-        "OSType": "Linux"
-      },
-      "SLES 12 SP3 BYOS": {
-        "sku": "12-SP3",
-        "offer": "SLES-SAP-BYOS",
-        "publisher": "SUSE",
-        "version": "latest",
-        "OSType": "Linux",
-        "Plan": {},
-        "UsePlan": false
-      },
-      "RHEL 7.4": {
-        "sku": "7.4",
-        "offer": "RHEL-SAP",
-        "publisher": "RedHat",
-        "OSType": "Linux"
       },
       "Oracle Linux 7.3": {
         "sku": "7.3",
