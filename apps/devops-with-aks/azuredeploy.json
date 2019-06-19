@@ -31,6 +31,12 @@
       "metadata": {
         "description": "Configure all Linux VMs with the SSH RSA public key string. Copy the content of your public key, such as ~/.ssh/id_rsa.pub"
       }
+    },
+    "kubernetesVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Kubernetes version. Run 'az aks get-versions' to find supported versions by region"
+      }
     }
   },
   "variables": {
@@ -42,7 +48,6 @@
     "grafanaDnsPrefix": "[concat('grafana', uniqueString(resourceGroup().id))]",
     "kubernetesDnsPrefix": "[concat('kubernetes', uniqueString(resourceGroup().id))]",
     "kubernetesClusterName": "[concat('aks', uniqueString(resourceGroup().id))]",
-    "kubernetesVersion": "1.12.6",
     "kubernetesAgentCount": 2,
     "kubernetesAgentVMSize": "Standard_DS2_v2",
     "gitRepository": "https://github.com/iainfoulds/devops-jenkins-aks",
@@ -172,7 +177,7 @@
       "location": "eastus",
       "name": "[variables('kubernetesClusterName')]",
       "properties": {
-        "kubernetesVersion": "[variables('kubernetesVersion')]",
+        "kubernetesVersion": "[parameters('kubernetesVersion')]",
         "dnsPrefix": "[variables('kubernetesDnsPrefix')]",
         "agentPoolProfiles": [
           {
