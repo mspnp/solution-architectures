@@ -2,18 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "templateContainerUri": {
-           "type": "string",
-           "metadata": {
-                "description": "URI of the Blob Storage Container containing the ARM Templates"
-            }
-        },
-        "templateContainerSasToken": {
-           "type": "string",
-           "metadata": {
-                "description": "The SAS token of the container containing the ARM Templates"
-            }
-        },
         "appservicePlanName": {
             "type": "string",
             "metadata": {
@@ -57,7 +45,9 @@
             }
         }
     },
-    "variables": {},
+    "variables": {
+        "sharedTemplateUri" : "https://raw.githubusercontent.com/mspnp/solution-architectures/master/cicdbots/arm-templates/"
+    },
     "resources": [ 
         {
             "apiVersion": "2017-05-10",
@@ -66,7 +56,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                  "uri": "[concat(parameters('templateContainerUri'), '/appservicePlan.json', parameters('templateContainerSasToken'))]",
+                  "uri": "[concat(variables('sharedTemplateUri'), 'appservicePlan.json')]",
                   "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -84,12 +74,12 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                  "uri": "[concat(parameters('templateContainerUri'), '/appservice.json', parameters('templateContainerSasToken'))]",
+                  "uri": "[concat(variables('sharedTemplateUri'), 'appservice.json')]",
                   "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "appservicePlanName": {"value": "[parameters('appservicePlanName')]"},
-                    "appserviceName": {"value": "[parameters('appserviceName')]"},                    
+                    "appserviceName": {"value": "[parameters('appserviceName')]"},
                     "botserviceName": {"value": "[parameters('botserviceName')]"},
                     "botMsaAppId": {"value": "[parameters('botMsaAppId')]"},
                     "botMsaAppPassword": {"value": "[parameters('botMsaAppPassword')]"}
@@ -103,7 +93,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('templateContainerUri'), '/applicationInsights.json', parameters('templateContainerSasToken'))]",
+                    "uri": "[concat(variables('sharedTemplateUri'), 'applicationInsights.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -122,7 +112,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                  "uri": "[concat(parameters('templateContainerUri'), '/botservice.json', parameters('templateContainerSasToken'))]",
+                  "uri": "[concat(variables('sharedTemplateUri'), 'botservice.json')]",
                   "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
