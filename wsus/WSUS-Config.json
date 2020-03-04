@@ -1,0 +1,41 @@
+{
+    // The directory or file share that payload files should be stored in. Note that backslashes should be doubled -- for example, "C:\\SomeDirectory\\SomeSubDirectory"
+    "ContentDir": "C:\\WSUS",
+    // One or more names of products that should be synchronized. The names used are the same as the names displayed in the WSUS administrative console's product configuration dialog. Case-insensitive. Can contain wildcards; for example, 'Windows 10\*' will synchronize all products with names starting with 'Windows 10'. Script will stop and return an error if any product string cannot be matched with at least one product. If this parameter is omitted, the server's current product synchronization settings will not change.
+    "Products": [
+        {
+            "Value": "Windows 10"
+        },
+        {
+            "Value": "Windows 7"
+        },
+        {
+            "Value": "Windows 8.1"
+        }
+    ],
+    // One or more classifications that should be synchronized. The names used are the same as the names displayed in the WSUS administrative console's product configuration dialog. Case-insensitive. Can contain wildcards; for example, '\*' will synchronize all classifications. If any classification string cannot be matched with at least one classification. If this parameter is omitted, the server's current classification synchronization settings will not change.
+    "Classifications": [
+        {
+            "Value": "Critical Updates"
+        },
+        {
+            "Value": "Updates"
+        }
+    ],
+    // One or more language tags that should be synchronized (examples: 'en', 'pt-br'). The available language tags are documented in 'Available languages for Windows' at https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/available-language-packs-for-windows . Language tags are case-sensitive and cannot contain wildcards. You can use the value 'all' to support all languages. If this parameter is omitted, it defaults to 'all'.
+    "Languages": [
+        {
+            "Value": "en"
+        }
+    ],
+    // Set to 'true' to auto-approve all updates as they arrive. Set to 'false' to delete the auto-approval rule created by 'true'.
+    "AutoApproveUpdates": true,
+    // The number of times per day that automatic synchonization should be performed (examples: '1', '4', '0'). A value of zero disables automatic synchronization.
+    "AutoSynchronize": 1,
+    // If 'true', updates payloads are stored locally (on the WSUS server). If 'false', update payloads are stored at Microsoft or on the upstream WSUS server.
+    "StoreUpdatesLocally": false,
+    // If 'true', express update packages are used in addition to full updates. This saves server-to-client bandwidth but increases client CPU/disk usage and server-to-server bandwidth. Ignored if StoreUpdatesLocally is 'false'.
+    "UseExpressInstallationOption": false,
+    // This script will normally take no action if it has already been run. If this parameter is 'true', the script will configure the server even if the script has run before.
+    "Force": false
+}
