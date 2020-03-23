@@ -53,36 +53,18 @@ $snapshotPrefix = (Get-Date).toString('yyyyMMddhhmm') # The prefix of the snapsh
 #############################################################################################
 
 ################################## Login session ############################################
-# Connect to Azure via the Azure Automation's RunAs Account
-#
-# AUTHOR TODO: Replace Usage of Get-AutomationPSCredential + Connect-AzAccount
-# with: Get-AutomationConnection + Connect-AzAccount.
+# Connect to Azure (via Managed Identity or Azure Automation's RunAs Account)
 #
 # Feel free to adjust the following lines to invoke Connect-AzAccount via
 # whatever mechanism your Hybrid Runbook Workers are configured to use.
-# For example, for Managed Identity you can simply invoke
-# Connect-AzAccount -Identity
 #
 # Whatever service principal is used, it must have the following permissions
-#  - Create/Delete snapshots on the source subscription
-#  - Read encryption key from the source subscription
-#  - Read/Write access to the Storage Account on the SOC subscription
-#  - Read/Write access to the Key Vault on the SOC subscription
+#  - "Contributor" on the Resource Group of target Virtual Machine. This provide snapshot rights on Virtual Machine disks
+#  - "Storage Account Contributor" on the immutable SOC Storage Account
+#  - Access policy to Get Secret (for BEK key) and Get Key (for KEK key, if present) on the Key Vault used by target Virtual Machine
+#  - Access policy to Set Secret (for BEK key) and Create Key (for KEK key, if present) on the SOC Key Vault
 
-$myCredential = Get-AutomationPSCredential -Name 'PLACEHOLDER'
-$userName = $myCredential.UserName
-$password = $myCredential.GetNetworkCredential().Password
-
-$myPsCred = New-Object System.Management.Automation.PSCredential($userName, $password)
-
-Connect-AzAccount -Credential $myPsCred
-
-# AUTHOR TODO:
-# PLEASE TRY THE FOLLOWING
-# $connectionCtx = Get-AutomationConnection -Name AzureRunAsConnection
-# Connect-AzAccount -ServicePrincipal -Tenant $connectionCtx.TenantID -ApplicationId $connectionCtx.ApplicationID -CertificateThumbprint $connectionCtx.CertificateThumbprint
-# or Set this up even better to use Managed Identity and then you'd only need to do
-# Connect-AzAccount -Identity
+Add-AzAccount -Identity
 
 ############################# Snapshot the OS disk of target VM ##############################
 Write-Output "#################################"
