@@ -53,9 +53,6 @@ $snapshotPrefix = (Get-Date).toString('yyyyMMddHHmm') # The prefix of the snapsh
 
 #############################################################################################
 ################################## Hybrid Worker Check ######################################
-Write-Output "#################################"
-Write-Output "Snapshot the OS Disk of target VM"
-Write-Output "#################################"
 $bios= Get-WmiObject -class Win32_BIOS
 if ($bios) {   
     Write-Output "Running on Hybrid Worker"
@@ -63,7 +60,7 @@ if ($bios) {
     ################################## Mounting fileshare #######################################
     # The Storage account also hosts an Azure file share to use as a temporary repository for calculating the snapshot's SHA-256 hash value.
     # The following doc shows a possible way to mount the Azure file share on Z:\ :
-    # https://docs.microsoft.com/en-us/azure/storage/files/storage-how-to-use-files-windows
+    # https://docs.microsoft.com/azure/storage/files/storage-how-to-use-files-windows
 
 
     ################################## Login session ############################################
@@ -90,7 +87,7 @@ if ($bios) {
 
     $disk = Get-AzDisk -ResourceGroupName $ResourceGroupName -DiskName $vm.StorageProfile.OsDisk.Name
     $snapshot = New-AzSnapshotConfig -SourceUri $disk.Id -CreateOption Copy -Location $vm.Location
-    $snapshotName = $snapshotPrefix + "-" + $disk.name
+    $snapshotName = $snapshotPrefix + "-" + $disk.name.Replace("_","-")
     New-AzSnapshot -ResourceGroupName $ResourceGroupName -Snapshot $snapshot -SnapshotName $snapshotname
 
 
@@ -129,10 +126,8 @@ if ($bios) {
         $sourcekv = $BEKurl.Split("/")
         $BEK = Get-AzKeyVaultSecret -VaultName  $sourcekv[2].split(".")[0] -Name $sourcekv[4] -Version $sourcekv[5]
         Write-Output "Key value: $BEK"
-        $BEK.Tags.Hash = $hash
         Get-AzSubscription -SubscriptionId $destSubId | Set-AzContext
-        $secretName = $snapshotName.Replace("_","-")
-        Set-AzKeyVaultSecret -VaultName $destKV -Name $secretName -SecretValue $BEK.SecretValue -ContentType "BEK" -Tag $BEK.Tags
+        Set-AzKeyVaultSecret -VaultName $destKV -Name $snapshotName -SecretValue $BEK.SecretValue -ContentType "BEK" -Tag $BEK.Tags
     }
 
 
@@ -141,7 +136,7 @@ if ($bios) {
     Write-Output "OS disk - Put hash value in Key Vault"
     Write-Output "#################################"
     $secret = ConvertTo-SecureString -String $hash -AsPlainText -Force
-    Set-AzKeyVaultSecret -VaultName $destKV -Name "$SnapshotName-sha256" -SecretValue $secret -ContentType "HASH"
+    Set-AzKeyVaultSecret -VaultName $destKV -Name "$SnapshotName-sha256" -SecretValue $secret -ContentType "text/plain"
     Get-AzSubscription -SubscriptionId $destSubId | Set-AzContext
     $targetStorageContextFile = (Get-AzStorageAccount -ResourceGroupName $destRGShare -Name $destSAfile).Context
     Remove-AzStorageFile -ShareName $destTempShare -Path $SnapshotName -Context $targetStorageContextFile
@@ -153,7 +148,7 @@ if ($bios) {
     foreach ($dataDisk in $vm.StorageProfile.DataDisks) {
         $ddisk = Get-AzDisk -ResourceGroupName $ResourceGroupName -DiskName $dataDisk.Name
         $dsnapshot = New-AzSnapshotConfig -SourceUri $ddisk.Id -CreateOption Copy -Location $vm.Location
-        $dsnapshotName = $snapshotPrefix + "-" + $ddisk.name
+        $dsnapshotName = $snapshotPrefix + "-" + $ddisk.name.Replace("_","-")
         $dsnapshotList += $dsnapshotName
         Write-Output "Snapshot data disk name: $dsnapshotName"
         New-AzSnapshot -ResourceGroupName $ResourceGroupName -Snapshot $dsnapshot -SnapshotName $dsnapshotName
@@ -192,9 +187,7 @@ if ($bios) {
             $BEK = Get-AzKeyVaultSecret -VaultName  $sourcekv[2].split(".")[0] -Name $sourcekv[4] -Version $sourcekv[5]
             Write-Output "Key value: $BEK"
             Write-Output "Secret name: $dsnapshotName"
-            $BEK.Tags.Hash = $dhash
-            $secretName = $dsnapshotName.Replace("_","-")
-            Set-AzKeyVaultSecret -VaultName $destKV -Name $secretName -SecretValue $BEK.SecretValue -ContentType "BEK" -Tag $BEK.Tags
+            Set-AzKeyVaultSecret -VaultName $destKV -Name $dsnapshotName -SecretValue $BEK.SecretValue -ContentType "BEK" -Tag $BEK.Tags
         }
         else {
             Write-Output "Disk not encrypted"
@@ -204,8 +197,7 @@ if ($bios) {
         Write-Output "Data disk - Put hash value in Key Vault"
         Write-Output "#################################"
         $Secret = ConvertTo-SecureString -String $dhash -AsPlainText -Force
-        Set-AzKeyVaultSecret -VaultName $destKV -Name "$dsnapshotName-sha256" -SecretValue $Secret -ContentType "HASH"
-        Get-AzSubscription -SubscriptionId $destSubId | Set-AzContext
+        Set-AzKeyVaultSecret -VaultName $destKV -Name "$dsnapshotName-sha256" -SecretValue $Secret -ContentType "text/plain"
         $targetStorageContextFile = (Get-AzStorageAccount -ResourceGroupName $destRGShare -Name $destSAfile).Context
         Remove-AzStorageFile -ShareName $destTempShare -Path $dsnapshotName -Context $targetStorageContextFile
     }
