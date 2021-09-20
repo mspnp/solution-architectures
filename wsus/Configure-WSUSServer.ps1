@@ -135,10 +135,10 @@ function ConfigProductsForSync {
         Get-WsusServer | Get-WsusProduct | Set-WSUSProduct -Disable
 
         foreach ($Product in $Json.Products) {
-            $productFound = Get-WsusProduct | Where-Object -FilterScript { $\_.product.title -like $Product.Value }
+            $productFound = Get-WsusProduct | Where-Object -FilterScript { $_.product.title -like $Product.Value }
 
             if (-not [string]::IsNullOrWhitespace($productFound)) {
-                Get-WsusServer | Get-WsusProduct | Where-Object -FilterScript { $\_.product.title -like $Product.Value } | Set-WsusProduct
+                Get-WsusServer | Get-WsusProduct | Where-Object -FilterScript { $_.product.title -like $Product.Value } | Set-WsusProduct
             }
             else {
                 throw "Product ($Product.Value) that requested to sync not found in the product categories"
@@ -158,10 +158,10 @@ function ConfigClassificationsForSync {
         Get-WsusServer | Get-WsusClassification | Set-WsusClassification -Disable
 
         foreach ($Classification in $Json.Classifications) {
-            $classificationFound = Get-WsusClassification | Where-Object { $\_.Classification.Title -Like $Classification.Value }
+            $classificationFound = Get-WsusClassification | Where-Object { $_.Classification.Title -Like $Classification.Value }
 
             if (-not [string]::IsNullOrWhitespace($classificationFound)) {
-                Get-WsusServer | Get-WsusClassification | Where-Object { $\_.Classification.Title -Like $Classification.Value } | Set-WsusClassification
+                Get-WsusServer | Get-WsusClassification | Where-Object { $_.Classification.Title -Like $Classification.Value } | Set-WsusClassification
             }
             else {
                 throw "Classification ($Classification.Value) that requested to sync not found in the classification list"
@@ -172,7 +172,7 @@ function ConfigClassificationsForSync {
 
 function EnableAutoApproval {
     $wsus = Get-WsusServer
-    $approvalrule = $wsus.GetInstallApprovalRules() | Where-Object { $\_.Name -eq "Approve All Updates" }
+    $approvalrule = $wsus.GetInstallApprovalRules() | Where-Object { $_.Name -eq "Approve All Updates" }
 
     if ($approvalrule) {
         Write-Host "Using existing auto-approval rule"
@@ -186,7 +186,7 @@ function EnableAutoApproval {
     $ApprovalRule.Enabled = $true
     $productcollection = New-Object -TypeName Microsoft.UpdateServices.Administration.UpdateCategoryCollection
     $computergroupcollection = New-Object -TypeName Microsoft.UpdateServices.Administration.ComputerTargetGroupCollection
-    $allcomputers = $wsus.GetComputerTargetGroups() | Where-Object { $\_.Name -eq "All Computers" }
+    $allcomputers = $wsus.GetComputerTargetGroups() | Where-Object { $_.Name -eq "All Computers" }
 
     if ($allcomputers) {
         $computergroupcollection.Add($allcomputers)
@@ -201,7 +201,7 @@ function EnableAutoApproval {
 
 function DisableAutoApproval {
     $wsus = Get-WsusServer
-    $approvalrule = $wsus.GetInstallApprovalRules() | Where-Object { $\_.Name -eq "Approve All Updates" }
+    $approvalrule = $wsus.GetInstallApprovalRules() | Where-Object { $_.Name -eq "Approve All Updates" }
 
     if ($approvalrule) {
         Write-Host "Deleting existing auto-approval rule"
