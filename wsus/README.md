@@ -1,6 +1,6 @@
 # Set up WSUS by using the automation script
 
-This content supports the [Plan deployment for updating Windows VMs in Azure](https://github.com/MicrosoftDocs/architecture-center/tree/master/docs/example-scenario/wsus) Azure Architecture Center article. For information about these files please see that article.
+This content supports the [Plan deployment for updating Windows VMs in Azure](https://docs.microsoft.com/azure/architecture/example-scenario/wsus/) Azure Architecture Center article. For information about these files please see that article.
 
 ## Contents
 
