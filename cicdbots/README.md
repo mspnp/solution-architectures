@@ -16,7 +16,7 @@
 
 ## Validation
 
-1. navigate to `./solutions-architectures/cicdbots/echo-bot/TeamsAppManifest` folder
+1. navigate to `./solutions-architectures/cicdbots/teams-bot-manifest` folder
 1. then edit the `manifest.json` to replace your Microsoft App Id (that was created when you registered your bot earlier) everywhere you see the place holder string \<\<YOUR-MICROSOFT-APP-ID\>\>
 1. zip up the contents of the teamsAppManifest folder to create a manifest.zip: `zip -r manifest.zip *`
 1. upload the `manifest.zip` to Teams. Go to the `Apps` view and click "Upload a custom app"
