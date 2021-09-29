@@ -5,7 +5,20 @@
 1. Ms Teams.
 1. .NET Core SDK version 3.1.
 1. follow the steps [here](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration?view=azure-bot-service-4.0&tabs=csharp) to create a basic bot in azure.
-1. execute the following to add the MS Temas channel: `az bot msteams create -n <bot-name> -g <resource-group-name>`
+1. execute the following to add the MS Temas channel:
+
+   ```
+   az bot msteams create -n <bot-name> -g <resource-group-name>`
+   ```
+
+1. generate an echo bot in your local working copy:
+
+   ```
+   dotnet new -i Microsoft.Bot.Framework.CSharp.EchoBot --nuget-source https://botbuilder.myget.org/F/aitemplates/api/v3/index.json
+   dotnet new echobot -n echo-bot
+   ```
+
+   > Note: this step uses the .NET Core Templates for [Bot Framework v4](https://dev.botframework.com). You could choose among other more advanced  bots if you want to. For more information, please visit [https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates](https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates).
 
 ## Run the EchoBot app locally
 
