@@ -8,7 +8,7 @@ using Microsoft.Azure.WebJobs.Extensions.SignalRService;
  * It is used by client applications to get a token from the SignalR service which clients can use to subscribe to a hub. 
  * This should always be named negotiate. 
  */
-namespace FunctionApp6
+namespace SignalIRFunctionApp
 {
     public static class NegotiateFunction
     {

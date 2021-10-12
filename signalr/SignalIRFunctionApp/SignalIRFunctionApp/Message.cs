@@ -1,12 +1,7 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 /*
  * This function is triggered by a Service Bus Trigger. 
@@ -16,12 +11,12 @@ using Newtonsoft.Json;
  * "AzureWebJobsStorage" is the name of the connection string for Azure Service Bus. You can replace it in local.settings file.
  */
 
-namespace FunctionApp6
+namespace SignalIRFunctionApp
 {
     public static class MessageFunction
     {
         [FunctionName("message")]
-        public static async void Run([ServiceBusTrigger("QUEUE_NAME", Connection = "AzureWebJobsStorage")]string myQueueItem, [SignalR(HubName = "chat")]IAsyncCollector<SignalRMessage> signalRMessages, ILogger log)
+        public static async Task Run([ServiceBusTrigger("QUEUE_NAME", Connection = "AzureWebJobsStorage")]string myQueueItem, [SignalR(HubName = "chat")]IAsyncCollector<SignalRMessage> signalRMessages, ILogger log)
         {
 
             if (string.IsNullOrEmpty(myQueueItem))
