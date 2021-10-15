@@ -94,10 +94,115 @@ chmod +x ./saveenv.sh
 
 1. execute `dotnet run`
 
-## Validation
+## Local validation
 
 1. navigate to `./solutions-architectures/cicdbots/teams-bot-manifest` folder
 1. then edit the `manifest.json` to replace your Microsoft App Id (that was created when you registered your bot earlier) everywhere you see the place holder string \<\<YOUR-MICROSOFT-APP-ID\>\>
 1. zip up the contents of the teamsAppManifest folder to create a manifest.zip: `zip -r manifest.zip *`
 1. upload the `manifest.zip` to Teams. Go to the `Apps` view and click "Upload a custom app"
 1. send any message and wait for the echo reply
+
+## Create a new Azure DevOps CI/CD pipeline for the EchoBot
+
+1. create a new yaml pipeline
+
+   ```bash
+   touch azure-pipelines.yml
+   ```
+
+1. trigger the pipeline when your forked repo receives a new commit into the `main` branch if and only if a file gets modified under the `echo-bot` folder structure:
+
+   ```bash
+   cat >> azure-pipelines.yml <<EOF
+   trigger:
+     branches:
+       include:
+       - main
+     paths:
+       include:
+       - echo-bot
+   EOF
+   ```
+
+1. add the first stage to build the EchoBot application:
+
+   ```bash
+   cat >> azure-pipelines.yml <<EOF
+
+   stages:
+   - stage: Build
+     jobs:
+     - job: EchoBotBuild
+       displayName: EchoBot Continous Integration
+       pool:
+         vmImage: 'ubuntu-20.04'
+       continueOnError: false
+       steps:
+       - task: DotNetCoreCLI@2
+         displayName: Restore
+         inputs:
+           command: restore
+           projects: echo-bot/echo-bot.csproj
+
+       - task: DotNetCoreCLI@2
+         displayName: Build
+         inputs:
+           projects: echo-bot/echo-bot.csproj
+           arguments: '--configuration \$(BuildConfiguration)'
+
+       - task: DotNetCoreCLI@2
+         displayName: Publish
+         inputs:
+           command: publish
+           publishWebProjects: false
+           workingDirectory: echo-bot
+           arguments: '--configuration release --output "\$(build.artifactstagingdirectory)" --no-restore'
+           zipAfterPublish: false
+   EOF
+   ```
+
+1. archive the output from the build and publish this as an artifact in your pipeline:
+
+   ```bash
+   cat >> azure-pipelines.yml <<EOF
+
+       - task: ArchiveFiles@2
+         displayName: 'Archive files'
+         inputs:
+           rootFolderOrFile: '\$(build.artifactstagingdirectory)'
+           includeRootFolder: false
+           archiveType: zip
+
+       - task: PublishPipelineArtifact@1
+         displayName: 'Publish Artifact'
+         inputs:
+           targetPath: '\$(build.artifactstagingdirectory)'
+           artifactName: 'drop'
+   EOF
+   ```
+
+   :book: the artifact that is published as part of this building stage is later being used by the deployment stage
+
+1. create the final stage that deploys your recently published artifcat
+
+   ```bash
+   cat >> azure-pipelines.yml <<EOF
+
+   - stage: Deploy
+     dependsOn:
+     - Build
+     jobs:
+     - deployment: EchoBotDeploy
+       displayName: EchoBot Continous Deployment
+       pool:
+         vmImage: 'ubuntu-20.04'
+       environment: 'echobot-cicd-env'
+       strategy:
+         runOnce:
+           deploy:
+             steps:
+             - script: echo foobar
+               displayName: 'test task'
+               name: echoTask
+   EOF
+   ```
