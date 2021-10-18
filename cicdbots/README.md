@@ -1,13 +1,29 @@
 ## Prerequisites
 
+1. An Azure subscription. You can [open an account for free](https://azure.microsoft.com/free).
+1. An Azure DevOps account. You can [start free](https://azure.microsoft.com/services/devops/).
+1. create a PAT, see [Use personal access tokens](https://docs.microsoft.com/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops#create-a-pat).
+
+   :important: ensure your PAT expires in just a few days, and give it the least priviledges by selecting the specific scope this token needs to be authorized for.  Build: `Read & execute`  Environment: `Read & manage`  Release: `Read, write, execute & manage`  Project and Team: `Read, write & manage`  Service Connections: `Read, query & manage`.  Finally, ensure you save the generated PAT in a secure maner until you use this a few steps below.
+
+1. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
+
+   [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
+
 1. [ngrok](https://ngrok.com/).
 1. Microsoft Teams.
 1. .NET Core SDK version 3.1.
-1. clone this repo: `git clone https://github.com/mspnp/solution-architectures.git`.
+1. fork this repo: `git clone https://github.com/mspnp/solution-architectures.git`.
 1. navigate to the cicdbots folder
 
    ```bash
    cd ./solutions-architectures/cicdbots
+   ```
+
+1. Authenticate into your Azure subscription
+
+   ```bash
+   az login
    ```
 
 1. create the Azure Resource Group
@@ -16,7 +32,22 @@
    az group create -n rg-cicd-bots -l eastus2
    ```
 
-## Create the EchoBot app
+## Expected results
+
+Following the steps below will result in an Azure resources as well as Azure Devops configuration that will be used throughout this CICD Bots Reference Implementation.
+
+| Object                             | Purpose                                                 |
+|------------------------------------|---------------------------------------------------------|
+| Forked repo                        | This is your own copy of the CICD bots Reference Implemenation that is going to be located from  your very own GitHub repositories directory. |
+| A new resourge group               | This will logically group all Azure resource in this Reference Implementation, the location has been arbitrary decided but you could choose any other if desired. |
+| An App Service Plan                | This is an Standard Windows App Service Plan. |
+| A Web App Service                  | This is the managed Web Application service where the Echo Bot application is going to be published. |
+| An Echo Bot Service Principal      | This is the representation in your Azure AD of the Echo Bot application. |
+| A new Azure DevOps project         | CI/CD pipelines are going to be created under this new project. |
+| Multi-Stage YAML pipeline          | A multi-stage YAML pipeline capable of building the Echo Bot application on top of changed on its folder and deploy the artifacts being created to the Web App service. |
+| An ARM Service Principal           | This is a Service Principal with `Controibutor` RBAC role in your Azure Subscription and is going to employed during the Multi-Stage YAML pipeline execution to manage your Azure Resources. |
+
+## Create the EchoBot app and its ARM templates to be deployed into Azure
 
 1. install the Microsoft Bot generators
 
@@ -34,17 +65,17 @@
 
 ## Register a new Azure Bot in your Azure subscription
 
-1. Choose a passwork for your bot
+1. Choose a password for your bot
 
    ```bash
-   export APP_SECRET=<at-least-sixteen-characters-here>
+   APP_SECRET=<at-least-sixteen-characters-here>
    ```
 
 1. register a new Azure AD App for the EchoBot
 
    ```bash
-   export APP_DETAILS_CICD_BOTS=$(az ad app create --display-name "echobot" --password ${APP_SECRET} --available-to-other-tenants -o json) && \
-   export APP_ID_CICD_BOTS=$(echo $APP_DETAILS_CICD_BOTS | jq ".appId" -r)
+   APP_DETAILS_CICD_BOTS=$(az ad app create --display-name "echobot" --password ${APP_SECRET} --available-to-other-tenants -o json) && \
+   APP_ID_CICD_BOTS=$(echo $APP_DETAILS_CICD_BOTS | jq ".appId" -r)
    ```
 
 1. deploy the Azure Bot resource
@@ -95,6 +126,8 @@ chmod +x ./saveenv.sh
 1. execute `dotnet run`
 
 ## Local validation
+
+:bulb: Before procceding to deploy you might want to test your new EchoBot app is fully working.
 
 1. navigate to `./solutions-architectures/cicdbots/teams-bot-manifest` folder
 1. then edit the `manifest.json` to replace your Microsoft App Id (that was created when you registered your bot earlier) everywhere you see the place holder string \<\<YOUR-MICROSOFT-APP-ID\>\>
