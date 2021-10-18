@@ -9,6 +9,7 @@
    ```bash
    cd ./solutions-architectures/cicdbots
    ```
+
 1. create the Azure Resource Group
 
    ```bash
@@ -46,7 +47,6 @@
    export APP_ID_CICD_BOTS=$(echo $APP_DETAILS_CICD_BOTS | jq ".appId" -r)
    ```
 
-1. navigate to `/echo-bot/DeployTemplates`
 1. deploy the Azure Bot resource
 
    ```bash
