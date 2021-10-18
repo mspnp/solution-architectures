@@ -137,6 +137,49 @@ chmod +x ./saveenv.sh
 
 ## Create a new Azure DevOps CI/CD pipeline for the EchoBot
 
+1. install de Azure DevOps Azure CLI extension
+
+   ```bash
+   az extension add --upgrade -n azure-devops
+   ```
+
+   :bulb: ops team members might want to use the [Azure CLI extension](https://docs.microsoft.com/azure/devops/cli) to interact with Azure DevOps on daily basis. Alternatevely, same steps can be done from the Azure DevOps site.
+
+1. set your Azure DevOps organization name
+
+   ```bash
+   AZ_DEVOPS_ORG_NAME_CICD_BOTS=<your-azdevops-org-name-here>
+   ```
+
+1. set your Azure DevOps organization
+
+   ```bash
+   AZ_DEVOPS_ORG_CICD_BOTS=https://dev.azure.com/${AZ_DEVOPS_ORG_NAME_CICD_BOTS}/
+   ```
+
+1. login in your Azure DevOps account
+
+   ```bash
+   az devops login
+   ```
+
+   :key: you will be prompted for the PAT token, paste the saved in the prerequiistes section. Please let's take a look at the [Sign in with PAT documentation](https://docs.microsoft.com/azure/devops/cli/log-in-via-pat?view=azure-devops&tabs=windows#user-prompted-to-use-az-devops-login) for more information login.
+
+1. create a new Azure DevOps project
+
+   ```bash
+   az devops project create --name cicdbots --org $AZ_DEVOPS_ORG_CICD_BOTS
+   ```
+
+1. create service principal to mange your Azure resources from Azure Pipelines
+
+   ```bash
+   SP_DETAILS_CICD_BOTS=$(az ad sp create-for-rbac --appId echo-bot --role="Contributor") && \
+   ARM_TENANT_ID_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".tenant" -r) && \
+   ARM_SP_CLIENT_ID_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
+   ARM_SP_CLIENT_SECRET_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
+   ```
+
 1. create a new yaml pipeline
 
    ```bash
