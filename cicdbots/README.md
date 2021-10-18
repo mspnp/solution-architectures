@@ -197,7 +197,7 @@ chmod +x ./saveenv.sh
        displayName: EchoBot Continous Deployment
        pool:
          vmImage: 'ubuntu-20.04'
-       environment: 'echobot-cicd-env'
+       environment: 'echobot-prod'
        strategy:
          runOnce:
            deploy:
