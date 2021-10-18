@@ -2,10 +2,10 @@
 
 1. clone this repo: `git clone https://github.com/mspnp/solution-architectures.git`.
 1. [ngrok](https://ngrok.com/).
-1. Ms Teams.
+1. Microsoft Teams.
 1. .NET Core SDK version 3.1.
 1. follow the steps [here](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration?view=azure-bot-service-4.0&tabs=csharp) to create a basic bot in azure.
-1. execute the following to add the MS Temas channel:
+1. execute the following to create the channel on the bot for communication with Microsoft Teams:
 
    ```
    az bot msteams create -n <bot-name> -g <resource-group-name>`
