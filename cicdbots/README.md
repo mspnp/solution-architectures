@@ -283,3 +283,10 @@ chmod +x ./saveenv.sh
                name: echoTask
    EOF
    ```
+
+## Clean up
+
+1. delete the SP you create for the Echo Bot application
+1. delete the SP you creted for ARM
+1. delete the Azure resource group
+1. delete the Azure DevOps project
