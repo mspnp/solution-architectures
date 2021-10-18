@@ -107,27 +107,27 @@ chmod +x ./saveenv.sh
 1. create a new yaml pipeline
 
    ```bash
-   touch azure-pipelines.yml
+   touch echo-bot/azure-pipelines.yml
    ```
 
 1. trigger the pipeline when your forked repo receives a new commit into the `main` branch if and only if a file gets modified under the `echo-bot` folder structure:
 
    ```bash
-   cat >> azure-pipelines.yml <<EOF
+   cat >> echo-bot/azure-pipelines.yml <<EOF
    trigger:
      branches:
        include:
        - main
      paths:
        include:
-       - echo-bot
+       - cicdbots/echo-bot
    EOF
    ```
 
 1. add the first stage to build the EchoBot application:
 
    ```bash
-   cat >> azure-pipelines.yml <<EOF
+   cat >> echo-bot/azure-pipelines.yml <<EOF
 
    stages:
    - stage: Build
@@ -142,21 +142,21 @@ chmod +x ./saveenv.sh
          displayName: Restore
          inputs:
            command: restore
-           projects: echo-bot/echo-bot.csproj
+           projects: cicdbots/echo-bot/echo-bot.csproj
 
        - task: DotNetCoreCLI@2
          displayName: Build
          inputs:
-           projects: echo-bot/echo-bot.csproj
-           arguments: '--configuration \$(BuildConfiguration)'
+           projects: cicdbots/echo-bot/echo-bot.csproj
+           arguments: '--configuration release'
 
        - task: DotNetCoreCLI@2
          displayName: Publish
          inputs:
            command: publish
            publishWebProjects: false
-           workingDirectory: echo-bot
-           arguments: '--configuration release --output "\$(build.artifactstagingdirectory)" --no-restore'
+           workingDirectory: cicdbots/echo-bot
+           arguments: '--configuration release --output "\$(Build.ArtifactStagingDirectory)" --no-restore'
            zipAfterPublish: false
    EOF
    ```
@@ -164,20 +164,21 @@ chmod +x ./saveenv.sh
 1. archive the output from the build and publish this as an artifact in your pipeline:
 
    ```bash
-   cat >> azure-pipelines.yml <<EOF
+   cat >> echo-bot/azure-pipelines.yml <<EOF
 
        - task: ArchiveFiles@2
          displayName: 'Archive files'
          inputs:
-           rootFolderOrFile: '\$(build.artifactstagingdirectory)'
+           rootFolderOrFile: '\$(Build.ArtifactStagingDirectory)'
            includeRootFolder: false
            archiveType: zip
+           archiveFile: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
 
        - task: PublishPipelineArtifact@1
          displayName: 'Publish Artifact'
          inputs:
-           targetPath: '\$(build.artifactstagingdirectory)'
-           artifactName: 'drop'
+           targetPath: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
+           artifactName: 'drop-\$(Build.BuildId)'
    EOF
    ```
 
@@ -186,7 +187,7 @@ chmod +x ./saveenv.sh
 1. create the final stage that deploys your recently published artifcat
 
    ```bash
-   cat >> azure-pipelines.yml <<EOF
+   cat >> echo-bot/azure-pipelines.yml <<EOF
 
    - stage: Deploy
      dependsOn:
