@@ -135,7 +135,7 @@ chmod +x ./saveenv.sh
 1. upload the `manifest.zip` to Teams. Go to the `Apps` view and click "Upload a custom app"
 1. send any message and wait for the echo reply
 
-## Create a new Azure DevOps CI/CD pipeline for the EchoBot
+## Create a new Azure DevOps project for testing the CI/CD pipelines
 
 1. install de Azure DevOps Azure CLI extension
 
@@ -179,6 +179,8 @@ chmod +x ./saveenv.sh
    ARM_SP_CLIENT_ID_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
    ARM_SP_CLIENT_SECRET_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
    ```
+
+## Create a new Multi-Stage YAML pipeline for the EchoBot
 
 1. create a new yaml pipeline
 
@@ -282,6 +284,49 @@ chmod +x ./saveenv.sh
                displayName: 'test task'
                name: echoTask
    EOF
+   ```
+
+## Create a new the Azure DevOps pipeline
+
+1. enter your github user
+
+   ```bash
+   GITHUB_USER_CICD_BOTS=<github-username>
+   ```
+1. create a [new GitHub PAT with specific scopes (admin:repo_hook, repo, user)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-token), and then set the token to an env var:
+
+   ```bash
+   AZURE_DEVOPS_EXT_GITHUB_PAT=<your-new-PAT>
+   ```
+
+1. get your forked repo github url
+
+   ```bash
+   NEW_REMOTE_URL_CICD_BOTS=https://github.com/${GITHUB_USER_CICD_BOTS}/solution-architectures.git
+   ```
+
+1. create a new github service connection in Azure DevOps. This will be needed to create a hook in your github repo that notifies Azure DevOps, so it can trigger your pipelines accordingly.
+
+  ```bash
+  AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS=$(az devops service-endpoint github create --name github-svc-conn --github-url ${NEW_REMOTE_URL_CICD_BOTS}) && \
+  AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS=$(echo $AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS | jq ".id" -r)
+  ```
+
+1. using the Multi-Stage YAML just edited in the previous section create the new pipeline. Some info could be requested during this process.
+
+   :eyes:  The command will give you the service connection options. Please, choose the one already created.
+
+   ```bash
+   az pipelines create \
+      --organization $AZ_DEVOPS_ORG_CICD_BOTS \
+      --project cicdbots \
+      --name echo-bot \
+      --yml-path cicdbots/echo-bot/azure-pipelines.yml \
+      --repository-type github \
+      --repository $NEW_REMOTE_URL_CICD_BOTS \
+      --branch main \
+      --service-connection $AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS \
+      --skip-first-run=true
    ```
 
 ## Clean up
