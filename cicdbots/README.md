@@ -329,6 +329,32 @@ chmod +x ./saveenv.sh
       --skip-first-run=true
    ```
 
+## Create yourt Azure DevOps Pipelines Environment
+
+1. before having a first run of your pipeline, you must create an environment to host them
+
+   ```bash
+   echo '{ "name": "echobot-prod" }' > env.json && \
+   az devops invoke --area environments --resource environments --route-parameters project=cicdbots --http-method POST  --api-version 6.0-preview --in-file env.json
+   ```
+
+## Execute your pipeline
+
+1. kick off the first run to validate all is working just fine
+
+   ```bash
+   az pipelines build queue --organization $AZ_DEVOPS_ORG_CICD_BOTS --project cicdbots --definition-name=echo-bot`
+   ```
+
+1. monitor the current pipeline execution status
+
+   ```bash
+   export COMMIT_SHA1=$(git rev-parse HEAD) && \
+   until export AZ_PIPELINE_STATUS=$(az pipelines build list --organization $AZ_DEVOPS_ORG_CICD_BOTS --project cicdbots --query "[?sourceVersion=='${COMMIT_SHA1}']".status -o tsv 2> /dev/null) && [[ $AZ_PIPELINE_STATUS == "completed" ]]; do echo "Monitoring multi-stage pipeline: ${AZ_PIPELINE_STATUS}" && sleep 20; done
+   ```
+
+   :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Azure DevOps Pipelines Approvals](https://docs.microsoft.com/azure/devops/pipelines/process/approvals?view=azure-devops&tabs=check-pass#approvals).
+
 ## Clean up
 
 1. delete the SP you create for the Echo Bot application
