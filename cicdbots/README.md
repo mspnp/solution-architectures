@@ -124,15 +124,6 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az bot msteams create -n bot-echo -g rg-cicd-bots
    ```
 
-## Save your progress
-
-take a moment to save the env vars you have configured already. This can be later used to resume your the progress. :warning: It must not be used in prod to prevent from leaking in-memory sensetive data.
-
-```bash
-chmod +x ./saveenv.sh
-./saveenv.sh
-```
-
 ## Run the EchoBot app locally
 
 1. navigate to `./solutions-architectures/cicdbots/echo-bot`
