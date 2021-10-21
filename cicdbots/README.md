@@ -175,10 +175,26 @@ chmod +x ./saveenv.sh
 
    ```bash
    SP_DETAILS_CICD_BOTS=$(az ad sp create-for-rbac --appId echo-bot --role="Contributor") && \
-   ARM_TENANT_ID_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".tenant" -r) && \
-   ARM_SP_CLIENT_ID_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
-   ARM_SP_CLIENT_SECRET_CICD_BOTS=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
+   AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".tenant" -r) && \
+   AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
+   AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_KEY=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
    ```
+
+1. create a new service endpoint for Azure RM
+
+   ```bash
+   az devops service-endpoint azurerm create \
+      --azure-rm-service-principal-id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID \
+      --azure-rm-subscription-id $(az account show --query id -o tsv) \
+      --azure-rm-subscription-name "$(az account show --query name -o tsv)" \
+      --azure-rm-tenant-id $AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID \
+      --organization $AZ_DEVOPS_ORG_CICD_BOTS \
+      --project cicdbots \
+      --name ARMServiceConnection
+   ```
+
+   :book: this Service Endpoint needs to be added to your project under your Azure DevOps organization to access your Azure Subscription resource from the Azure Pipeline you are about to create.
+
 
 ## Create a new Multi-Stage YAML pipeline for the EchoBot
 
@@ -262,7 +278,7 @@ chmod +x ./saveenv.sh
 
    :book: the artifact that is published as part of this building stage is later being used by the deployment stage
 
-1. create the final stage that deploys your recently published artifcat
+1. create the final stage to deploy your recently published artifcat into the Azure Web App production slot
 
    ```bash
    cat >> echo-bot/azure-pipelines.yml <<EOF
@@ -280,9 +296,18 @@ chmod +x ./saveenv.sh
          runOnce:
            deploy:
              steps:
-             - script: echo foobar
-               displayName: 'test task'
-               name: echoTask
+             - task: AzureRmWebAppDeployment@4
+               inputs:
+                 appType: webApp
+                 ConnectionType: AzureRM
+                 ConnectedServiceName: 'ARMServiceConnection'
+                 ResourceGroupName: 'rg-cicd-bots'
+                 WebAppName: 'appsvc-echo-bot'
+                 DeploymentType: runFromZip
+                 enableCustomDeployment: true
+                 packageForLinux: '$(Pipeline.Workspace)/drop-$(Build.BuildId)/echo-bot.zip'
+                 deployToSlotOrASE: true
+                 SlotName: 'production'
    EOF
    ```
 
@@ -312,7 +337,7 @@ chmod +x ./saveenv.sh
   AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS=$(echo $AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS | jq ".id" -r)
   ```
 
-1. using the Multi-Stage YAML just edited in the previous section create the new pipeline. Some info could be requested during this process.
+1. use the Multi-Stage YAML from  the previous section to create the new pipeline.
 
    :eyes:  The command will give you the service connection options. Please, choose the one already created.
 
@@ -353,7 +378,25 @@ chmod +x ./saveenv.sh
    until export AZ_PIPELINE_STATUS=$(az pipelines build list --organization $AZ_DEVOPS_ORG_CICD_BOTS --project cicdbots --query "[?sourceVersion=='${COMMIT_SHA1}']".status -o tsv 2> /dev/null) && [[ $AZ_PIPELINE_STATUS == "completed" ]]; do echo "Monitoring multi-stage pipeline: ${AZ_PIPELINE_STATUS}" && sleep 20; done
    ```
 
-   :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Azure DevOps Pipelines Approvals](https://docs.microsoft.com/azure/devops/pipelines/process/approvals?view=azure-devops&tabs=check-pass#approvals).
+   :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource and the ARM Service Connection in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Azure DevOps Pipelines Approvals](https://docs.microsoft.com/azure/devops/pipelines/process/approvals?view=azure-devops&tabs=check-pass#approvals).
+
+1. once the deployment is completed you can now update the Azure Bot endpoint to start using the EchoBot app running on Azure Web Apps
+
+   ```bash
+   az bot update -g rg-cicd-bots -n bot-echo -e https://appsvc-echo-bot.azurewebsites.net/api/messages
+   ```
+
+## Final validation
+
+:important: Before procceding ensure your local copy of the EchoBot has been shutdown (the being tunneled with ngrok from the `Local Validation` section).
+
+1. Open Microsoft Teams.
+1. Navigate to the previous chat window with your bot.
+1. send another message and wait for the echo reply.
+
+:eyes: Please note that now it is your live version of the EchoBot app running over Azure Web App service that you just recently deployed from code using Azure Pipelines
+
+:book: Now you could make any further changes over your EchoBot app, and that will be built and continously deployed.
 
 ## Clean up
 
