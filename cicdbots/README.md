@@ -36,16 +36,15 @@
 
 Following the steps below will result in an Azure resources as well as Azure Devops configuration that will be used throughout this CICD Bots Reference Implementation.
 
-| Object                             | Purpose                                                 |
-|------------------------------------|---------------------------------------------------------|
-| Forked repo                        | This is your own copy of the CICD bots Reference Implemenation that is going to be located from  your very own GitHub repositories directory. |
-| A new resourge group               | This will logically group all Azure resource in this Reference Implementation, the location has been arbitrary decided but you could choose any other if desired. |
-| An App Service Plan                | This is an Standard Windows App Service Plan. |
-| A Web App Service                  | This is the managed Web Application service where the Echo Bot application is going to be published. |
-| An Echo Bot Service Principal      | This is the representation in your Azure AD of the Echo Bot application. |
-| A new Azure DevOps project         | CI/CD pipelines are going to be created under this new project. |
-| Multi-Stage YAML pipeline          | A multi-stage YAML pipeline capable of building the Echo Bot application on top of changed on its folder and deploy the artifacts being created to the Web App service. |
-| An ARM Service Principal           | This is a Service Principal with `Controibutor` RBAC role in your Azure Subscription and is going to employed during the Multi-Stage YAML pipeline execution to manage your Azure Resources. |
+| Object                                    | Purpose                                                 |
+|-------------------------------------------|---------------------------------------------------------|
+| An Azure App Service                      | This is the managed Web Application service where the Echo Bot application is going to be published. |
+| An Echo Bot Service Principal             | This is the representation in your Azure AD of the Echo Bot application. |
+| A new Azure DevOps project                | CI/CD pipelines are going to be created under this new project. |
+| Multi-Stage YAML pipeline                 | A multi-stage YAML pipeline capable of building the Echo Bot application on top of changed on its folder and deploy the artifacts being created to the Web App service. |
+| An ARM Service Principal                  | This is a Service Principal with `Controibutor` RBAC role in your Azure Subscription and is going to employed during the Multi-Stage YAML pipeline execution to manage your Azure Resources. |
+| An Azure DevOps ARM Service Connection    | This service connection will use the ARM Service Principal to allow Azure Pipeline interact with Azure resources in your subscription |
+| An Azure DevOps GitHub Service Connection | The code lives in GitHub and the Azure Pipeline needs to be notified when new commits are made againts the `main` branch. This is why using a GitHub PAT (Personal Access Token), you will give access to your Azure Pipeline to create a webhook and make other operations thought a new Azure DevOps GitHub Service Connection. |
 
 ## Create the EchoBot app and its ARM templates to be deployed into Azure
 
