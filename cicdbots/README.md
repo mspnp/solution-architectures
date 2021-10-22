@@ -13,24 +13,6 @@
 1. [ngrok](https://ngrok.com/).
 1. Microsoft Teams.
 1. .NET Core SDK version 3.1.
-1. fork this repo: `git clone https://github.com/mspnp/solution-architectures.git`.
-1. navigate to the cicdbots folder
-
-   ```bash
-   cd ./solutions-architectures/cicdbots
-   ```
-
-1. Authenticate into your Azure subscription
-
-   ```bash
-   az login
-   ```
-
-1. create the Azure Resource Group
-
-   ```bash
-   az group create -n rg-cicd-bots -l eastus2
-   ```
 
 ## Expected results
 
@@ -45,6 +27,30 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 | An ARM Service Principal                  | This is a Service Principal with `Controibutor` RBAC role in your Azure Subscription and is going to employed during the Multi-Stage YAML pipeline execution to manage your Azure Resources. |
 | An Azure DevOps ARM Service Connection    | This service connection will use the ARM Service Principal to allow Azure Pipeline interact with Azure resources in your subscription |
 | An Azure DevOps GitHub Service Connection | The code lives in GitHub and the Azure Pipeline needs to be notified when new commits are made againts the `main` branch. This is why using a GitHub PAT (Personal Access Token), you will give access to your Azure Pipeline to create a webhook and make other operations thought a new Azure DevOps GitHub Service Connection. |
+
+## Fork the repository
+
+1. fork this repo: `git clone https://github.com/mspnp/solution-architectures.git`.
+1. navigate to the cicdbots folder
+
+   ```bash
+   cd ./solutions-architectures/cicdbots
+   ```
+
+## Create the Azure resource group
+
+1. Authenticate into your Azure subscription
+
+   ```bash
+   az login
+   ```
+
+1. create the Azure Resource Group
+
+   ```bash
+   az group create -n rg-cicd-bots -l eastus2
+   ```
+
 
 ## Create the EchoBot app and its ARM templates to be deployed into Azure
 
