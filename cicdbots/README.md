@@ -13,6 +13,13 @@
 1. [ngrok](https://ngrok.com/).
 1. Microsoft Teams.
 1. .NET Core SDK version 3.1.
+1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
+
+1. Login GitHub Cli
+
+   ```bash
+   gh auth login -s "repo,admin:org"
+   ```
 
 ## Expected results
 
@@ -30,11 +37,24 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
 ## Fork the repository
 
-1. fork this repo: `git clone https://github.com/mspnp/solution-architectures.git`.
+1. Fork the repository first, and clone it
+
+   ```bash
+   gh repo fork mspnp/solution-architectures --clone=true --remote=false
+   ```
+
+   :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about) to run Bash.
+
 1. navigate to the cicdbots folder
 
    ```bash
    cd ./solutions-architectures/cicdbots
+   ```
+
+1. remove the upstrem remote
+
+   ```bash
+   git remote remove upstream
    ```
 
 ## Create the Azure resource group
@@ -316,13 +336,22 @@ chmod +x ./saveenv.sh
    EOF
    ```
 
-## Create a new the Azure DevOps pipeline
-
-1. enter your github user
+1. push the recent changes in your local working copy to your forked repo
 
    ```bash
-   GITHUB_USER_CICD_BOTS=<github-username>
+   git add -u && git add echo-bot && git commit -m "add EchoBot app and pipeline for CI/CD" && git push origin main
    ```
+
+   :book: you are adding to your own repo the `EchoBot` application code and the Multi-Stage YAML pipeline. Later you are going these new assets for CI/CD.
+
+## Create a new the Azure DevOps pipeline
+
+1. get your GitHub user name
+
+   ```bash
+   GITHUB_USER_CICD_BOTS=$(echo $(gh auth status 2>&1) | sed "s#.*as \(.*\) (.*#\1#")
+   ```
+
 1. create a [new GitHub PAT with specific scopes (admin:repo_hook, repo, user)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-token), and then set the token to an env var:
 
    ```bash
