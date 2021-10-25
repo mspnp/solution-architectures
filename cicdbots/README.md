@@ -431,7 +431,26 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
 ## Clean up
 
-1. delete the SP you create for the Echo Bot application
-1. delete the SP you creted for ARM
+1. delete the Azure AD app you registered for the Echo Bot application:
+
+   ```bash
+   az ad app delete --id $APP_ID_CICD_BOTS
+   ```
+
+1. delete the Azure AD service principal you created for ARM
+
+   ```bash
+   az ad sp delete --id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID
+   ```
+
 1. delete the Azure resource group
+
+   ```bash
+   az group delete -n rg-cicd-bots -y
+   ```
+
 1. delete the Azure DevOps project
+
+   ```bash
+   az devops project delete --id $(az devops project show --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query id -o tsv) --org $AZURE_DEVOPS_ORG_CICD_BOTS -y
+   ```
