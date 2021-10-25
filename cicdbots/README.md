@@ -1,8 +1,13 @@
+# CICD pipeline for chatbots
+
+this repository is meant to guide you during the process of creating a new CICD pipeline for a simple Microsoft Teams echo chatbot application running in Azure. Executing a few command lines instructions, you are going through the process of creating your own EchoBot application by using the [Bot Framework v4](https://dev.botframework.com), the required infrastructure in Azure, and authoring an Azure DevOps Multi-Stage YAML pipeline that builds and deploy to Azure when new changea are made against your forked repository.
+
 ## Prerequisites
 
 1. An Azure subscription. You can [open an account for free](https://azure.microsoft.com/free).
 1. An Azure DevOps account. You can [start free](https://azure.microsoft.com/services/devops/).
-1. create a PAT, see [Use personal access tokens](https://docs.microsoft.com/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops#create-a-pat).
+1. Microsoft Teams. [Sign up for free](https://www.microsoft.com/microsoft-teams)
+1. Create an Azure DevOps PAT (Personal Access Token), see [Use personal access tokens](https://docs.microsoft.com/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops#create-a-pat).
 
    :important: ensure your PAT expires in just a few days, and give it the least priviledges by selecting the specific scope this token needs to be authorized for.  Build: `Read & execute`  Environment: `Read & manage`  Release: `Read, write, execute & manage`  Project and Team: `Read, write & manage`  Service Connections: `Read, query & manage`.  Finally, ensure you save the generated PAT in a secure maner until you use this a few steps below.
 
@@ -11,7 +16,6 @@
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
 1. [ngrok](https://ngrok.com/).
-1. Microsoft Teams.
 1. .NET Core SDK version 3.1.
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
 
@@ -70,7 +74,6 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    ```bash
    az group create -n rg-cicd-bots -l eastus2
    ```
-
 
 ## Create the EchoBot app and its ARM templates to be deployed into Azure
 
