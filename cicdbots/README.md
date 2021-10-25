@@ -103,6 +103,12 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    APP_ID_CICD_BOTS=$(echo $APP_DETAILS_CICD_BOTS | jq ".appId" -r)
    ```
 
+1. generate a unique name for your Azure Web App
+
+   ```bash
+   export APP_NAME_CICD_BOTS=appsvc-echo-bot-$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+   ```
+
 1. deploy the Azure Bot resource
 
    ```bash
@@ -113,7 +119,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
       appSecret=${APP_SECRET} \
       botId="bot-echo" \
       newAppServicePlanName="appplanweb-echo-bot" \
-      newWebAppName="appsvc-echo-bot" \
+      newWebAppName=${APP_NAME_CICD_BOTS} \
       appServicePlanLocation="eastus2" \
       -n "deploy-bot"
    ```
@@ -318,7 +324,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
                  ConnectionType: AzureRM
                  ConnectedServiceName: 'ARMServiceConnection'
                  ResourceGroupName: 'rg-cicd-bots'
-                 WebAppName: 'appsvc-echo-bot'
+                 WebAppName: '${APP_NAME_CICD_BOTS}'
                  DeploymentType: runFromZip
                  enableCustomDeployment: true
                  packageForLinux: '$(Pipeline.Workspace)/drop-$(Build.BuildId)/echo-bot.zip'
@@ -408,7 +414,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. once the deployment is completed you can now update the Azure Bot endpoint to start using the EchoBot app running on Azure Web Apps
 
    ```bash
-   az bot update -g rg-cicd-bots -n bot-echo -e https://appsvc-echo-bot.azurewebsites.net/api/messages
+   az bot update -g rg-cicd-bots -n bot-echo -e https://${APP_NAME_CICD_BOTS}.azurewebsites.net/api/messages
    ```
 
 ## Final validation
