@@ -15,7 +15,6 @@ this repository is meant to guide you during the process of creating a new CICD 
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. [ngrok](https://ngrok.com/).
 1. .NET Core SDK version 3.1.
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
 
@@ -91,6 +90,8 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    dotnet new echobot -n echo-bot
    ```
 
+   :bulb: optionally, you could quickly test this new bot app locally, from the [Run the EchoBot app locally](./run-the-echobot-app-locally.-_optional_) section. If not interested at this moment, please proceed with the following section.
+
 ## Register a new Azure Bot in your Azure subscription
 
 1. Choose a password for your bot
@@ -132,33 +133,6 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    ```bash
    az bot msteams create -n bot-echo -g rg-cicd-bots
    ```
-
-## Run the EchoBot app locally
-
-1. navigate to `./solutions-architectures/cicdbots/echo-bot`
-1. configure the `appsettings.json` using new bot client id and password
-   ```bash
-   sed -i 's/"MicrosoftAppId": ""/"MicrosoftAppId": "'"$APP_ID_CICD_BOTS"'"/#g'  appsettings.json && \
-   sed -i 's/"MicrosoftAppPassword": ""/"MicrosoftAppPassword": "'"$APP_SECRET"'"/g' appsettings.json
-   ```
-1. execute `ngrok http -host-header=rewrite 3978`
-1. open another terminal window, and update the Azure Bot endpoint with the `ngrok` generated `https` forwarding url:
-
-   ```bash
-   az bot update -g rg-cicd-bots -n bot-echo -e https://<unique-identifier>.ngrok.io/api/messages
-   ```
-
-1. execute `dotnet run`
-
-## Local validation
-
-:bulb: Before procceding to deploy you might want to test your new EchoBot app is fully working.
-
-1. navigate to `./solutions-architectures/cicdbots/teams-bot-manifest` folder
-1. then edit the `manifest.json` to replace your Microsoft App Id (that was created when you registered your bot earlier) everywhere you see the place holder string \<\<YOUR-MICROSOFT-APP-ID\>\>
-1. zip up the contents of the teamsAppManifest folder to create a manifest.zip: `zip -r manifest.zip *`
-1. upload the `manifest.zip` to Teams. Go to the `Apps` view and click "Upload a custom app"
-1. send any message and wait for the echo reply
 
 ## Create a new Azure DevOps project for testing the CI/CD pipelines
 
@@ -219,7 +193,6 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    ```
 
    :book: this Service Endpoint needs to be added to your project under your Azure DevOps organization to access your Azure Subscription resource from the Azure Pipeline you are about to create.
-
 
 ## Create a new Multi-Stage YAML pipeline for the EchoBot
 
@@ -422,11 +395,22 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
 ## Final validation
 
-:important: Before procceding ensure your local copy of the EchoBot has been shutdown (the being tunneled with ngrok from the `Local Validation` section).
+1. navigate to manifest folder
 
-1. Open Microsoft Teams.
-1. Navigate to the previous chat window with your bot.
-1. send another message and wait for the echo reply.
+   ```bash
+   cd ./solutions-architectures/cicdbots/teams-bot-manifest
+   ```
+
+1. then edit the `manifest.json` to replace your Microsoft App Id (that was created when you registered your bot earlier) everywhere you see the place holder string \<\<YOUR-MICROSOFT-APP-ID\>\>
+1. zip up the contents of the teamsAppManifest folder
+
+   ```bash
+   zip -r manifest.zip *
+   ```
+
+1. open Microsoft Teams
+1. go to the `Apps` view and click "Upload a custom app". Then select the `manifest.zip`.
+1. send any message and wait for the echo reply
 
 :eyes: Please note that now it is your live version of the EchoBot app running over Azure Web App service that you just recently deployed from code using Azure Pipelines
 
@@ -457,3 +441,26 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    ```bash
    az devops project delete --id $(az devops project show --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query id -o tsv) --org $AZURE_DEVOPS_ORG_CICD_BOTS -y
    ```
+
+---
+
+## Run the EchoBot app locally. _Optional_
+
+1. install [ngrok](https://ngrok.com/).
+1. navigate to `./solutions-architectures/cicdbots/echo-bot`
+1. configure the `appsettings.json` using new bot client id and password
+
+   ```bash
+   sed -i 's/"MicrosoftAppId": ""/"MicrosoftAppId": "'"$APP_ID_CICD_BOTS"'"/#g'  appsettings.json && \
+   sed -i 's/"MicrosoftAppPassword": ""/"MicrosoftAppPassword": "'"$APP_SECRET"'"/g' appsettings.json
+   ```
+
+1. execute `ngrok http -host-header=rewrite 3978`
+1. open another terminal window, and update the Azure Bot endpoint with the `ngrok` generated `https` forwarding url:
+
+   ```bash
+   az bot update -g rg-cicd-bots -n bot-echo -e https://<unique-identifier>.ngrok.io/api/messages
+   ```
+
+1. execute `dotnet run`
+1. navigate to the [Final validation section](./final-validation) to validate the app is working as expected.
