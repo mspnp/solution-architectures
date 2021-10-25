@@ -17,7 +17,7 @@ this repository is meant to guide you during the process of creating a new CICD 
 
 1. .NET Core SDK version 3.1.
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
-
+1. Install [JQ](https://stedolan.github.io/jq/download/)
 1. Login GitHub Cli
 
    ```bash
