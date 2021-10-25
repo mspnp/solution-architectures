@@ -170,13 +170,13 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. set your Azure DevOps organization name
 
    ```bash
-   AZ_DEVOPS_ORG_NAME_CICD_BOTS=<your-azdevops-org-name-here>
+   AZURE_DEVOPS_ORG_NAME_CICD_BOTS=<your-azdevops-org-name-here>
    ```
 
 1. set your Azure DevOps organization
 
    ```bash
-   AZ_DEVOPS_ORG_CICD_BOTS=https://dev.azure.com/${AZ_DEVOPS_ORG_NAME_CICD_BOTS}/
+   AZURE_DEVOPS_ORG_CICD_BOTS=https://dev.azure.com/${AZURE_DEVOPS_ORG_NAME_CICD_BOTS}/
    ```
 
 1. login in your Azure DevOps account
@@ -190,7 +190,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. create a new Azure DevOps project
 
    ```bash
-   az devops project create --name cicdbots --org $AZ_DEVOPS_ORG_CICD_BOTS
+   az devops project create --name cicdbots --org $AZURE_DEVOPS_ORG_CICD_BOTS
    ```
 
 1. create service principal to mange your Azure resources from Azure Pipelines
@@ -210,7 +210,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
       --azure-rm-subscription-id $(az account show --query id -o tsv) \
       --azure-rm-subscription-name "$(az account show --query name -o tsv)" \
       --azure-rm-tenant-id $AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID \
-      --organization $AZ_DEVOPS_ORG_CICD_BOTS \
+      --organization $AZURE_DEVOPS_ORG_CICD_BOTS \
       --project cicdbots \
       --name ARMServiceConnection
    ```
@@ -374,7 +374,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
    ```bash
    az pipelines create \
-      --organization $AZ_DEVOPS_ORG_CICD_BOTS \
+      --organization $AZURE_DEVOPS_ORG_CICD_BOTS \
       --project cicdbots \
       --name echo-bot \
       --yml-path cicdbots/echo-bot/azure-pipelines.yml \
@@ -399,14 +399,14 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. kick off the first run to validate all is working just fine
 
    ```bash
-   az pipelines build queue --organization $AZ_DEVOPS_ORG_CICD_BOTS --project cicdbots --definition-name=echo-bot`
+   az pipelines build queue --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --definition-name=echo-bot`
    ```
 
 1. monitor the current pipeline execution status
 
    ```bash
    export COMMIT_SHA1=$(git rev-parse HEAD) && \
-   until export AZ_PIPELINE_STATUS=$(az pipelines build list --organization $AZ_DEVOPS_ORG_CICD_BOTS --project cicdbots --query "[?sourceVersion=='${COMMIT_SHA1}']".status -o tsv 2> /dev/null) && [[ $AZ_PIPELINE_STATUS == "completed" ]]; do echo "Monitoring multi-stage pipeline: ${AZ_PIPELINE_STATUS}" && sleep 20; done
+   until export AZURE_PIPELINE_STATUS_CICD_BOTS=$(az pipelines build list --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query "[?sourceVersion=='${COMMIT_SHA1}']".status -o tsv 2> /dev/null) && [[ $AZURE_PIPELINE_STATUS_CICD_BOTS == "completed" ]]; do echo "Monitoring multi-stage pipeline: ${AZURE_PIPELINE_STATUS_CICD_BOTS}" && sleep 20; done
    ```
 
    :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource and the ARM Service Connection in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Azure DevOps Pipelines Approvals](https://docs.microsoft.com/azure/devops/pipelines/process/approvals?view=azure-devops&tabs=check-pass#approvals).
