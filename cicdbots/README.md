@@ -134,6 +134,8 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az bot msteams create -n bot-echo -g rg-cicd-bots
    ```
 
+   :eyes: in this instructions we are mixing declarative ARM temaplates with imperative commands. Typically you will want to use one or aonther in your productive environments.
+
 ## Create a new Azure DevOps project for testing the CI/CD pipelines
 
 1. install de Azure DevOps Azure CLI extension
