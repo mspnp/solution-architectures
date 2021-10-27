@@ -79,7 +79,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. install the Microsoft Bot generators
 
    ```bash
-   dotnet new -i Microsoft.Bot.Framework.CSharp.EchoBot --nuget-source https://botbuilder.myget.org/F/aitemplates/api/v3/index.json
+   dotnet new -i Microsoft.Bot.Framework.CSharp.EchoBot::4.14.1.2 --nuget-source https://botbuilder.myget.org/F/aitemplates/api/v3/index.json
    ```
 
    :link: this step uses the .NET Core Templates for [Bot Framework v4](https://dev.botframework.com). You could choose among other more advanced  bots if you want to. For more information, please visit [https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates](https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates).
@@ -419,6 +419,12 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 :book: Now you could make any further changes over your EchoBot app, and that will be built and continously deployed.
 
 ## Clean up
+
+1. uninstall the EchoBot template
+
+   ```bash
+   dotnet new -u Microsoft.Bot.Framework.CSharp.EchoBot
+   ```
 
 1. delete the Azure AD app you registered for the Echo Bot application:
 
