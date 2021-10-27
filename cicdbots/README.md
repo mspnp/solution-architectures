@@ -347,7 +347,9 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az devops invoke --area environments --resource environments --route-parameters project=cicdbots --http-method POST  --api-version 6.0-preview --in-file env.json
    ```
 
-## Execute your pipeline
+## Execute your pipeline to get the EchoBot app cloud-hosted in Azure.
+
+This truly simulates the production level support for a Teams app. It involves uploading your EchoBot app to your externally accessible Azure Web App.
 
 1. kick off the first run to validate all is working just fine
 
@@ -372,21 +374,87 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
 ## Final validation
 
-1. navigate to manifest folder
+You are about to execute a final validation of your EchoBot app and it will required you to create a package to upload into Teams.
+
+### Create your app package
+
+1. create the app manifest file
 
    ```bash
-   cd ./solutions-architectures/cicdbots/teams-bot-manifest
+   touch manifest.json
    ```
 
-1. then edit the `manifest.json` to replace your Microsoft App Id (that was created when you registered your bot earlier) everywhere you see the place holder string \<\<YOUR-MICROSOFT-APP-ID\>\>
+1. add valid content to your manifest
+
+   ```bash
+   cat >> manifest.json <<EOF
+   {
+     "\$schema": "https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+     "manifestVersion": "1.11",
+     "version": "1.0.0",
+     "id": "${APP_ID_CICD_BOTS}",
+     "developer": {
+       "name": "EchoBot Sample",
+       "websiteUrl": "https://www.microsoft.com",
+       "privacyUrl": "https://www.teams.com/privacy",
+       "termsOfUseUrl": "https://www.teams.com/termsofuser"
+     },
+     "name": {
+       "short": "EchoBotSample"
+     },
+     "description": {
+       "short": "EchoBotSample",
+       "full": "The EchoBot Sample App"
+     },
+     "icons": {
+       "color": "color.png",
+       "outline": "outline.png"
+     },
+     "accentColor": "#FFFFFF",
+     "bots": [
+       {
+         "botId": "${APP_ID_CICD_BOTS}",
+         "scopes": [
+           "groupchat",
+           "team",
+           "personal"
+         ],
+         "supportsFiles": false,
+         "isNotificationOnly": false
+       }
+     ],
+     "permissions": [
+       "identity",
+       "messageTeamMembers"
+     ]
+   }
+   EOF
+   ```
+
 1. zip up the contents of the teamsAppManifest folder
 
    ```bash
-   zip -r manifest.zip *
+   zip -r manifest.zip manifest.json color.png outline.png
    ```
 
+1. validate it for errors.
+
+   ```bash
+   curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@./manifest.zip'
+   ```
+
+  :white_check_mark: check the status in the response is `Accepted`. You can see a more readable report by uploading your manifest at [https://dev.teams.microsoft.com/](https://dev.teams.microsoft.com/).
+
+### Upload your app in Microsoft Teams
+
+1. [Enable custom app uploading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) in Teams.
 1. open Microsoft Teams
 1. go to the `Apps` view and click "Upload a custom app". Then select the `manifest.zip`.
+
+:link: For troubleshooting of further instructions, please take a at [Upload your app](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
+
+### Send any message to be echo(ed)
+
 1. send any message and wait for the echo reply
 
 :eyes: Please note that now it is your live version of the EchoBot app running over Azure Web App service that you just recently deployed from code using Azure Pipelines
@@ -425,9 +493,15 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az devops project delete --id $(az devops project show --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query id -o tsv) --org $AZURE_DEVOPS_ORG_CICD_BOTS -y
    ```
 
+## Final notes
+
+if you want to learn how to publish your app, please visit the [Publish your app to your org](https://docs.microsoft.com/en-us/MicrosoftTeams/tenant-apps-catalog-teams?toc=/microsoftteams/platform/toc.json&bc=/MicrosoftTeams/breadcrumb/toc.json) or [Publish your app to the store](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish) based on your need.
+
 ---
 
-## Run the EchoBot app locally. _Optional_
+## Run the EchoBot app locally hosted in Teams. _Optional_
+
+This involves running the app locally in tunneling software. This permits you to easily run and debug your app within the Teams client.
 
 1. install [ngrok](https://ngrok.com/).
 1. navigate to `./solutions-architectures/cicdbots/echo-bot`
