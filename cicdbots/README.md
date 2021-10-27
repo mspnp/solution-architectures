@@ -116,16 +116,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. deploy the Azure Bot resource
 
    ```bash
-   az deployment group create \
-      -g "rg-cicd-bots" \
-      --template-file "./echo-bot/DeploymentTemplates/template-with-preexisting-rg.json" \
-      --parameters appId=${APP_ID_CICD_BOTS} \
-      appSecret=${APP_SECRET} \
-      botId="bot-echo" \
-      newAppServicePlanName="appplanweb-echo-bot" \
-      newWebAppName=${APP_NAME_CICD_BOTS} \
-      appServicePlanLocation="eastus2" \
-      -n "deploy-bot"
+   az deployment group create -g "rg-cicd-bots" -f "./echo-bot/DeploymentTemplates/template-with-preexisting-rg.json" -p appId=${APP_ID_CICD_BOTS} appSecret=${APP_SECRET} botId="bot-echo" newAppServicePlanName="appplanweb-echo-bot" newWebAppName=${APP_NAME_CICD_BOTS} appServicePlanLocation="eastus2" -n "deploy-bot"
    ```
 
 1. execute the following to add the MS Teams channel:
@@ -184,14 +175,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. create a new service endpoint for Azure RM
 
    ```bash
-   az devops service-endpoint azurerm create \
-      --azure-rm-service-principal-id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID \
-      --azure-rm-subscription-id $(az account show --query id -o tsv) \
-      --azure-rm-subscription-name "$(az account show --query name -o tsv)" \
-      --azure-rm-tenant-id $AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID \
-      --organization $AZURE_DEVOPS_ORG_CICD_BOTS \
-      --project cicdbots \
-      --name ARMServiceConnection
+   az devops service-endpoint azurerm create --azure-rm-service-principal-id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID --azure-rm-subscription-id $(az account show --query id -o tsv) --azure-rm-subscription-name "$(az account show --query name -o tsv)" --azure-rm-tenant-id $AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --name ARMServiceConnection
    ```
 
    :book: this Service Endpoint needs to be added to your project under your Azure DevOps organization to access your Azure Subscription resource from the Azure Pipeline you are about to create.
@@ -341,26 +325,17 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
 1. create a new github service connection in Azure DevOps. This will be needed to create a hook in your github repo that notifies Azure DevOps, so it can trigger your pipelines accordingly.
 
-  ```bash
-  AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS=$(az devops service-endpoint github create --name github-svc-conn --github-url ${NEW_REMOTE_URL_CICD_BOTS}) && \
-  AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS=$(echo $AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS | jq ".id" -r)
-  ```
+   ```bash
+   AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS=$(az devops service-endpoint github create --name github-svc-conn --github-url ${NEW_REMOTE_URL_CICD_BOTS}) && \
+   AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS=$(echo $AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS | jq ".id" -r)
+   ```
 
 1. use the Multi-Stage YAML from  the previous section to create the new pipeline.
 
    :eyes:  The command will give you the service connection options. Please, choose the one already created.
 
    ```bash
-   az pipelines create \
-      --organization $AZURE_DEVOPS_ORG_CICD_BOTS \
-      --project cicdbots \
-      --name echo-bot \
-      --yml-path cicdbots/echo-bot/azure-pipelines.yml \
-      --repository-type github \
-      --repository $NEW_REMOTE_URL_CICD_BOTS \
-      --branch main \
-      --service-connection $AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS \
-      --skip-first-run=true
+   az pipelines create --org $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --name echo-bot --yml-path cicdbots/echo-bot/azure-pipelines.yml --repository-type github --repository $NEW_REMOTE_URL_CICD_BOTS --branch main --service-connection $AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS --skip-first-run=true
    ```
 
 ## Create yourt Azure DevOps Pipelines Environment
