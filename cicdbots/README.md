@@ -308,11 +308,15 @@ Following the steps below will result in an Azure resources as well as Azure Dev
            archiveType: zip
            archiveFile: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
 
-       - script: zip -r \$(Build.ArtifactStagingDirectory)/manifest.zip cicdbots/echo-bot/manifest.json cicdbots/echo-bot/color.png cicdbots/echo-bot/outline.png
+       - script: |
+           zip -j \$(Build.ArtifactStagingDirectory)/manifest.zip cicdbots/echo-bot/manifest.json cicdbots/echo-bot/color.png cicdbots/echo-bot/outline.png
          displayName: 'Archive EchoBot manififest'
 
-       - script: curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@\$(Build.ArtifactStagingDirectory)/manifest.zip'
-         displayName: 'Validate the Teams manififest'
+       - script: |
+           response=$(curl --fail --silent --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary @$(Build.ArtifactStagingDirectory)/manifest.zip)
+           [[ $(echo $response | grep '"status":"Accepted"') != "" ]] && echo -e "\033[1;32m## [Passed] Package validation Ok \033[0m" || >&2 echo -e "\033[0;31m## [Fail] Package validation Fail: expected Accepted status - actual $response\033[0m"
+         displayName: 'Validate the Teams manifest'
+         failOnStderr: true
 
        - task: PublishPipelineArtifact@1
          displayName: 'Publish EchoBot app Artifact'
@@ -407,7 +411,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az pipelines create --org $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --name echo-bot --yml-path cicdbots/echo-bot/azure-pipelines.yml --repository-type github --repository $NEW_REMOTE_URL_CICD_BOTS --branch main --service-connection $AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS --skip-first-run=true
    ```
 
-## Create yourt Azure DevOps Pipelines Environment
+## Create your Azure DevOps Pipelines Environment
 
 1. before having a first run of your pipeline, you must create an environment to host them
 
@@ -423,7 +427,7 @@ This truly simulates the production level support for a Teams app. It involves u
 1. kick off the first run to validate all is working just fine
 
    ```bash
-   az pipelines build queue --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --definition-name=echo-bot`
+   az pipelines build queue --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --definition-name=echo-bot
    ```
 
 1. monitor the current pipeline execution status
