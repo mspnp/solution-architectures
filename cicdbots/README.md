@@ -479,9 +479,7 @@ You are about to execute a final validation of your EchoBot app and it will requ
 
 1. send any message and wait for the echo reply
 
-:eyes: Please note that now it is your live version of the EchoBot app running over Azure Web App service that you just recently deployed from code using Azure Pipelines
-
-:book: Now you could make any further changes over your EchoBot app, and that will be built and continously deployed.
+   :book: Now you could make any further changes over your EchoBot app, and push them to your repository. As a consequence, changes are continously ingrated and deployed.
 
 ## Clean up
 
