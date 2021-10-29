@@ -358,7 +358,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
                  WebAppName: '${APP_NAME_CICD_BOTS}'
                  DeploymentType: runFromZip
                  enableCustomDeployment: true
-                 packageForLinux: '$(Pipeline.Workspace)/drop-$(Build.BuildId)/echo-bot.zip'
+                 packageForLinux: '\$(Pipeline.Workspace)/drop-\$(Build.BuildId)/echo-bot.zip'
                  deployToSlotOrASE: true
                  SlotName: 'production'
    EOF
