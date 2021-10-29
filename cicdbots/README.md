@@ -92,6 +92,67 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
    :bulb: optionally, you could quickly test this new bot app locally, from the [Run the EchoBot app locally](./run-the-echobot-app-locally.-_optional_) section. If not interested at this moment, please proceed with the following section.
 
+## Create the EchoBot app package for Microsoft Teams
+
+1. create the app manifest file
+
+   ```bash
+   touch manifest.json
+   ```
+
+1. add valid content to your manifest
+
+   ```bash
+   cat >> echo-bot/manifest.json <<EOF
+   {
+     "\$schema": "https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+     "manifestVersion": "1.11",
+     "version": "1.0.0",
+     "id": "${APP_ID_CICD_BOTS}",
+     "developer": {
+       "name": "EchoBot Sample",
+       "websiteUrl": "https://www.microsoft.com",
+       "privacyUrl": "https://www.teams.com/privacy",
+       "termsOfUseUrl": "https://www.teams.com/termsofuser"
+     },
+     "name": {
+       "short": "EchoBotSample"
+     },
+     "description": {
+       "short": "EchoBotSample",
+       "full": "The EchoBot Sample App"
+     },
+     "icons": {
+       "color": "color.png",
+       "outline": "outline.png"
+     },
+     "accentColor": "#FFFFFF",
+     "bots": [
+       {
+         "botId": "${APP_ID_CICD_BOTS}",
+         "scopes": [
+           "groupchat",
+           "team",
+           "personal"
+         ],
+         "supportsFiles": false,
+         "isNotificationOnly": false
+       }
+     ],
+     "permissions": [
+       "identity",
+       "messageTeamMembers"
+     ]
+   }
+   EOF
+   ```
+
+1. copy the sample icons to your `echo-bot` folder
+
+   ```bash
+   cp color.png outline.png echo-bot/
+   ```
+
 ## Register a new Azure Bot in your Azure subscription
 
 1. Choose a password for your bot
@@ -245,18 +306,31 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    cat >> echo-bot/azure-pipelines.yml <<EOF
 
        - task: ArchiveFiles@2
-         displayName: 'Archive files'
+         displayName: 'Archive EchoBot app'
          inputs:
            rootFolderOrFile: '\$(Build.ArtifactStagingDirectory)'
            includeRootFolder: false
            archiveType: zip
            archiveFile: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
 
+       - script: zip -r \$(Build.ArtifactStagingDirectory)/manifest.zip cicdbots/echo-bot/manifest.json cicdbots/echo-bot/color.png cicdbots/echo-bot/outline.png
+			   displayName: 'Archive EchoBot manififest'
+
+       - script: curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@\$(Build.ArtifactStagingDirectory)/manifest.zip'
+			   displayName: 'Validate the Teams manififest'
+
        - task: PublishPipelineArtifact@1
-         displayName: 'Publish Artifact'
+         displayName: 'Publish EchoBot app Artifact'
          inputs:
            targetPath: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
            artifactName: 'drop-\$(Build.BuildId)'
+
+       - task: PublishPipelineArtifact@1
+         displayName: 'Publish EchoBot Team manifest Artifact'
+         inputs:
+           targetPath: '\$(Build.ArtifactStagingDirectory)/manifest.zip'
+           artifactName: 'manifest-\$(Build.BuildId)'
+
    EOF
    ```
 
@@ -376,79 +450,16 @@ This truly simulates the production level support for a Teams app. It involves u
 
 You are about to execute a final validation of your EchoBot app and it will required you to create a package to upload into Teams.
 
-### Create your app package
-
-1. create the app manifest file
-
-   ```bash
-   touch manifest.json
-   ```
-
-1. add valid content to your manifest
-
-   ```bash
-   cat >> manifest.json <<EOF
-   {
-     "\$schema": "https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-     "manifestVersion": "1.11",
-     "version": "1.0.0",
-     "id": "${APP_ID_CICD_BOTS}",
-     "developer": {
-       "name": "EchoBot Sample",
-       "websiteUrl": "https://www.microsoft.com",
-       "privacyUrl": "https://www.teams.com/privacy",
-       "termsOfUseUrl": "https://www.teams.com/termsofuser"
-     },
-     "name": {
-       "short": "EchoBotSample"
-     },
-     "description": {
-       "short": "EchoBotSample",
-       "full": "The EchoBot Sample App"
-     },
-     "icons": {
-       "color": "color.png",
-       "outline": "outline.png"
-     },
-     "accentColor": "#FFFFFF",
-     "bots": [
-       {
-         "botId": "${APP_ID_CICD_BOTS}",
-         "scopes": [
-           "groupchat",
-           "team",
-           "personal"
-         ],
-         "supportsFiles": false,
-         "isNotificationOnly": false
-       }
-     ],
-     "permissions": [
-       "identity",
-       "messageTeamMembers"
-     ]
-   }
-   EOF
-   ```
-
-1. zip up the contents of the teamsAppManifest folder
-
-   ```bash
-   zip -r manifest.zip manifest.json color.png outline.png
-   ```
-
-1. validate it for errors.
-
-   ```bash
-   curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@./manifest.zip'
-   ```
-
-  :white_check_mark: check the status in the response is `Accepted`. You can see a more readable report by uploading your manifest at [https://dev.teams.microsoft.com/](https://dev.teams.microsoft.com/).
-
 ### Upload your app in Microsoft Teams
 
 1. [Enable custom app uploading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) in Teams.
 1. open Microsoft Teams
+1. download the build artificat for manifest.zip
+
+   ```bash
+   # TODO
+   ```
+
 1. go to the `Apps` view and click "Upload a custom app". Then select the `manifest.zip`.
 
 :link: For troubleshooting of further instructions, please take a at [Upload your app](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
@@ -505,6 +516,20 @@ This involves running the app locally in tunneling software. This permits you to
 
 1. install [ngrok](https://ngrok.com/).
 1. navigate to `./solutions-architectures/cicdbots/echo-bot`
+1. zip up the manifest contents
+
+   ```bash
+   zip -r manifest.zip manifest.json color.png outline.png
+   ```
+
+1. validate it for errors.
+
+   ```bash
+   curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@./manifest.zip'
+   ```
+
+  :white_check_mark: check the status in the response is `Accepted`. You can see a more readable report by uploading your manifest at [https://dev.teams.microsoft.com/](https://dev.teams.microsoft.com/).
+
 1. configure the `appsettings.json` using new bot client id and password
 
    ```bash
