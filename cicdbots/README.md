@@ -92,18 +92,47 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
    :bulb: optionally, you could quickly test this new bot app locally, from the [Run the EchoBot app locally](./run-the-echobot-app-locally.-_optional_) section. If not interested at this moment, please proceed with the following section.
 
-## Create the EchoBot app package for Microsoft Teams
+## Register a new Azure Bot in your Azure subscription
 
-1. create the app manifest file
+1. Choose a password for your bot
 
    ```bash
-   touch manifest.json
+   APP_SECRET=<at-least-sixteen-characters-here>
    ```
+
+1. register a new Azure AD App for the EchoBot
+
+   ```bash
+   APP_DETAILS_CICD_BOTS=$(az ad app create --display-name "echobot" --password ${APP_SECRET} --available-to-other-tenants -o json) && \
+   APP_ID_CICD_BOTS=$(echo $APP_DETAILS_CICD_BOTS | jq ".appId" -r)
+   ```
+
+1. generate a unique name for your Azure Web App
+
+   ```bash
+   export APP_NAME_CICD_BOTS=appsvc-echo-bot-$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+   ```
+
+1. deploy the Azure Bot resource
+
+   ```bash
+   az deployment group create -g "rg-cicd-bots" -f "./echo-bot/DeploymentTemplates/template-with-preexisting-rg.json" -p appId=${APP_ID_CICD_BOTS} appSecret=${APP_SECRET} botId="bot-echo" newAppServicePlanName="appplanweb-echo-bot" newWebAppName=${APP_NAME_CICD_BOTS} appServicePlanLocation="eastus2" -n "deploy-bot"
+   ```
+
+1. execute the following to add the MS Teams channel:
+
+   ```bash
+   az bot msteams create -n bot-echo -g rg-cicd-bots
+   ```
+
+   :eyes: in this instructions we are mixing declarative ARM temaplates with imperative commands. Typically you will want to use one or aonther in your productive environments.
+
+## Create the EchoBot app package for Microsoft Teams
 
 1. add valid content to your manifest
 
    ```bash
-   cat >> echo-bot/manifest.json <<EOF
+   cat > echo-bot/manifest.json <<EOF
    {
      "\$schema": "https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
      "manifestVersion": "1.11",
@@ -153,40 +182,6 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    cp color.png outline.png echo-bot/
    ```
 
-## Register a new Azure Bot in your Azure subscription
-
-1. Choose a password for your bot
-
-   ```bash
-   APP_SECRET=<at-least-sixteen-characters-here>
-   ```
-
-1. register a new Azure AD App for the EchoBot
-
-   ```bash
-   APP_DETAILS_CICD_BOTS=$(az ad app create --display-name "echobot" --password ${APP_SECRET} --available-to-other-tenants -o json) && \
-   APP_ID_CICD_BOTS=$(echo $APP_DETAILS_CICD_BOTS | jq ".appId" -r)
-   ```
-
-1. generate a unique name for your Azure Web App
-
-   ```bash
-   export APP_NAME_CICD_BOTS=appsvc-echo-bot-$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
-   ```
-
-1. deploy the Azure Bot resource
-
-   ```bash
-   az deployment group create -g "rg-cicd-bots" -f "./echo-bot/DeploymentTemplates/template-with-preexisting-rg.json" -p appId=${APP_ID_CICD_BOTS} appSecret=${APP_SECRET} botId="bot-echo" newAppServicePlanName="appplanweb-echo-bot" newWebAppName=${APP_NAME_CICD_BOTS} appServicePlanLocation="eastus2" -n "deploy-bot"
-   ```
-
-1. execute the following to add the MS Teams channel:
-
-   ```bash
-   az bot msteams create -n bot-echo -g rg-cicd-bots
-   ```
-
-   :eyes: in this instructions we are mixing declarative ARM temaplates with imperative commands. Typically you will want to use one or aonther in your productive environments.
 
 ## Create a new Azure DevOps project for testing the CI/CD pipelines
 
@@ -227,7 +222,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. create service principal to mange your Azure resources from Azure Pipelines
 
    ```bash
-   SP_DETAILS_CICD_BOTS=$(az ad sp create-for-rbac --appId echo-bot --role="Contributor") && \
+   export SP_DETAILS_CICD_BOTS=$(az ad sp create-for-rbac -n echo-bot-rm --role="Contributor") && \
    AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".tenant" -r) && \
    AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
    AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_KEY=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
@@ -300,7 +295,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    EOF
    ```
 
-1. archive the output from the build and publish this as an artifact in your pipeline:
+1. archive the output from the build and the manifest. Then publish both as artifacts in your pipeline:
 
    ```bash
    cat >> echo-bot/azure-pipelines.yml <<EOF
@@ -314,10 +309,10 @@ Following the steps below will result in an Azure resources as well as Azure Dev
            archiveFile: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
 
        - script: zip -r \$(Build.ArtifactStagingDirectory)/manifest.zip cicdbots/echo-bot/manifest.json cicdbots/echo-bot/color.png cicdbots/echo-bot/outline.png
-			   displayName: 'Archive EchoBot manififest'
+         displayName: 'Archive EchoBot manififest'
 
        - script: curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@\$(Build.ArtifactStagingDirectory)/manifest.zip'
-			   displayName: 'Validate the Teams manififest'
+         displayName: 'Validate the Teams manififest'
 
        - task: PublishPipelineArtifact@1
          displayName: 'Publish EchoBot app Artifact'
