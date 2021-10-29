@@ -367,7 +367,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. push the recent changes in your local working copy to your forked repo
 
    ```bash
-   git add -u && git add echo-bot && git commit -m "add EchoBot app and pipeline for CI/CD" && git push origin main
+   git add -u && git add echo-bot && git commit -m "add EchoBot app and pipeline for CI/CD" && git push origin master:main
    ```
 
    :book: you are adding to your own repo the `EchoBot` application code and the Multi-Stage YAML pipeline. Later you are going these new assets for CI/CD.
