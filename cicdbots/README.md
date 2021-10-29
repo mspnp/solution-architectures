@@ -453,15 +453,27 @@ You are about to execute a final validation of your EchoBot app and it will requ
 
 1. [Enable custom app uploading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) in Teams.
 1. open Microsoft Teams
-1. download the build artificat for manifest.zip
+1. zip up the manifest contents
 
    ```bash
-   # TODO
+   zip -j manifest.zip ./echo-bot/manifest.json ./echo-bot/color.png ./echo-bot/outline.png
    ```
+
+   :book: This `manifest.zip` file is published as an artifact during the build pipeline execution, and as such you could opt to download or distribute that from there when the time comes. For testing purposes, you may want to proceed without leaving the your terminal at this moment by executing the line above.
+
+1. validate the manifest for errors. _Optional_
+
+   :book: The following validation is performed during the build pipeline execution. You may want to repeat this here for the first time to understand the mechanics of this proccess. You can see a more readable report by uploading your manifest at [https://dev.teams.microsoft.com/](https://dev.teams.microsoft.com/).
+
+   ```bash
+   curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@./manifest.zip'
+   ```
+
+   :white_check_mark: check the status in the response is `Accepted`.
 
 1. go to the `Apps` view and click "Upload a custom app". Then select the `manifest.zip`.
 
-:link: For troubleshooting of further instructions, please take a at [Upload your app](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
+   :link: For troubleshooting of further instructions, please take a at [Upload your app](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
 
 ### Send any message to be echo(ed)
 
@@ -515,20 +527,6 @@ This involves running the app locally in tunneling software. This permits you to
 
 1. install [ngrok](https://ngrok.com/).
 1. navigate to `./solutions-architectures/cicdbots/echo-bot`
-1. zip up the manifest contents
-
-   ```bash
-   zip -r manifest.zip manifest.json color.png outline.png
-   ```
-
-1. validate it for errors.
-
-   ```bash
-   curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@./manifest.zip'
-   ```
-
-  :white_check_mark: check the status in the response is `Accepted`. You can see a more readable report by uploading your manifest at [https://dev.teams.microsoft.com/](https://dev.teams.microsoft.com/).
-
 1. configure the `appsettings.json` using new bot client id and password
 
    ```bash
