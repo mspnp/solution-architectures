@@ -534,4 +534,4 @@ This involves running the app locally in tunneling software. This permits you to
    ```
 
 1. Execute `dotnet run`
-1. Navigate to the [Final validation section](./final-validation) to validate the app is working as expected.
+1. Navigate to the [Final validation section](#final-validation) to validate the app is working as expected.
