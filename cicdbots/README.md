@@ -51,7 +51,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. Navigate to the cicdbots folder
 
    ```bash
-   cd ./solutions-architectures/cicdbots
+   cd ./solution-architectures/cicdbots
    ```
 
 1. Remove the upstrem remote
