@@ -313,7 +313,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
        - script: |
            response=\$(curl --fail --silent --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary @\$(Build.ArtifactStagingDirectory)/manifest.zip)
-           [[ $(echo $response | grep '"status":"Accepted"') != "" ]] && echo -e "\033[1;32m## [Passed] Package validation Ok \033[0m" || >&2 echo -e "\033[0;31m## [Fail] Package validation Fail: expected Accepted status - actual $response\033[0m"
+           [[ \$(echo \$response | grep '"status":"Accepted"') != "" ]] && echo -e "\033[1;32m## [Passed] Package validation Ok \033[0m" || >&2 echo -e "\033[0;31m## [Fail] Package validation Fail: expected Accepted status - actual $response\033[0m"
          displayName: 'Validate the Teams manifest'
          failOnStderr: true
 
@@ -364,7 +364,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 1. Push the recent changes in your local working copy to your forked repo
 
    ```bash
-   git add -u && git add echo-bot && git commit -m "add EchoBot app and pipeline for CI/CD" && git push origin master:main
+   git add echo-bot && git commit -m "add EchoBot app and pipeline for CI/CD" && git push origin master:main
    ```
 
    :book: You are adding to your own repo the `EchoBot` application code and the Multi-Stage YAML pipeline. Later you are going these new assets for CI/CD.
