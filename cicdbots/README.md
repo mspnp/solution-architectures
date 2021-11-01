@@ -182,7 +182,6 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    cp color.png outline.png echo-bot/
    ```
 
-
 ## Create a new Azure DevOps project for testing the CI/CD pipelines
 
 1. Install de Azure DevOps Azure CLI extension
@@ -321,14 +320,8 @@ Following the steps below will result in an Azure resources as well as Azure Dev
        - task: PublishPipelineArtifact@1
          displayName: 'Publish EchoBot app Artifact'
          inputs:
-           targetPath: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
+           targetPath: '\$(Build.ArtifactStagingDirectory)/*.zip'
            artifactName: 'drop-\$(Build.BuildId)'
-
-       - task: PublishPipelineArtifact@1
-         displayName: 'Publish EchoBot Team manifest Artifact'
-         inputs:
-           targetPath: '\$(Build.ArtifactStagingDirectory)/manifest.zip'
-           artifactName: 'manifest-\$(Build.BuildId)'
 
    EOF
    ```
