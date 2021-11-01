@@ -305,14 +305,14 @@ Following the steps below will result in an Azure resources as well as Azure Dev
            rootFolderOrFile: '\$(Build.ArtifactStagingDirectory)'
            includeRootFolder: false
            archiveType: zip
-           archiveFile: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
+           archiveFile: '\$(Build.ArtifactStagingDirectory)/drop/echo-bot.zip'
 
        - script: |
-           zip -j \$(Build.ArtifactStagingDirectory)/manifest.zip cicdbots/echo-bot/manifest.json cicdbots/echo-bot/color.png cicdbots/echo-bot/outline.png
+           zip -j \$(Build.ArtifactStagingDirectory)/drop/manifest.zip cicdbots/echo-bot/manifest.json cicdbots/echo-bot/color.png cicdbots/echo-bot/outline.png
          displayName: 'Archive EchoBot manififest'
 
        - script: |
-           response=\$(curl --fail --silent --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary @\$(Build.ArtifactStagingDirectory)/manifest.zip)
+           response=\$(curl --fail --silent --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary @\$(Build.ArtifactStagingDirectory)/drop/manifest.zip)
            [[ \$(echo \$response | grep '"status":"Accepted"') != "" ]] && echo -e "\033[1;32m## [Passed] Package validation Ok \033[0m" || >&2 echo -e "\033[0;31m## [Fail] Package validation Fail: expected Accepted status - actual $response\033[0m"
          displayName: 'Validate the Teams manifest'
          failOnStderr: true
@@ -320,8 +320,8 @@ Following the steps below will result in an Azure resources as well as Azure Dev
        - task: PublishPipelineArtifact@1
          displayName: 'Publish EchoBot app Artifact'
          inputs:
-           targetPath: '\$(Build.ArtifactStagingDirectory)/'
-           archiveFilePatterns: '**/*.zip'
+           targetPath: '\$(Build.ArtifactStagingDirectory)/drop'
+           archiveFilePatterns: '*.zip'
            artifactName: 'drop-\$(Build.BuildId)'
 
    EOF
