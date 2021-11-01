@@ -320,7 +320,8 @@ Following the steps below will result in an Azure resources as well as Azure Dev
        - task: PublishPipelineArtifact@1
          displayName: 'Publish EchoBot app Artifact'
          inputs:
-           targetPath: '\$(Build.ArtifactStagingDirectory)/*.zip'
+           targetPath: '\$(Build.ArtifactStagingDirectory)/'
+           archiveFilePatterns: '**/*.zip'
            artifactName: 'drop-\$(Build.BuildId)'
 
    EOF
