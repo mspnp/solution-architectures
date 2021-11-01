@@ -113,7 +113,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    export APP_NAME_CICD_BOTS=appsvc-echo-bot-$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
    ```
 
-1. Deploy the Azure Bot resource
+1. Deploy the required Azure resources such as Azure Bot, Azure App Service Pan and App Service using the generated ARM templates
 
    ```bash
    az deployment group create -g "rg-cicd-bots" -f "./echo-bot/DeploymentTemplates/template-with-preexisting-rg.json" -p appId=${APP_ID_CICD_BOTS} appSecret=${APP_SECRET} botId="bot-echo" newAppServicePlanName="appplanweb-echo-bot" newWebAppName=${APP_NAME_CICD_BOTS} appServicePlanLocation="eastus2" -n "deploy-bot"
