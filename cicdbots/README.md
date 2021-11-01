@@ -125,7 +125,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az bot msteams create -n bot-echo -g rg-cicd-bots
    ```
 
-   :eyes: In this instructions we are mixing declarative ARM temaplates with imperative commands. Typically you will want to use one or aonther in your productive environments.
+   :eyes: Instructions presented in this Reference Implmentation are mixing declarative ARM temaplates with imperative commands. Typically you will want to use one or aonther in your productive environments.
 
 ## Create the EchoBot app package for Microsoft Teams
 
@@ -224,7 +224,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    export SP_DETAILS_CICD_BOTS=$(az ad sp create-for-rbac -n echo-bot-rm --role="Contributor") && \
    AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".tenant" -r) && \
    AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
-   AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_KEY=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
+   export AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_KEY=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
    ```
 
 1. Create a new service endpoint for Azure RM
@@ -312,7 +312,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
          displayName: 'Archive EchoBot manififest'
 
        - script: |
-           response=$(curl --fail --silent --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary @$(Build.ArtifactStagingDirectory)/manifest.zip)
+           response=\$(curl --fail --silent --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary @\$(Build.ArtifactStagingDirectory)/manifest.zip)
            [[ $(echo $response | grep '"status":"Accepted"') != "" ]] && echo -e "\033[1;32m## [Passed] Package validation Ok \033[0m" || >&2 echo -e "\033[0;31m## [Fail] Package validation Fail: expected Accepted status - actual $response\033[0m"
          displayName: 'Validate the Teams manifest'
          failOnStderr: true
