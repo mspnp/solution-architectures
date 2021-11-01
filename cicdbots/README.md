@@ -453,7 +453,7 @@ You are about to execute a final validation of your EchoBot app and it will requ
    zip -j manifest.zip ./echo-bot/manifest.json ./echo-bot/color.png ./echo-bot/outline.png
    ```
 
-   :book: This `manifest.zip` file is published as an artifact during the build pipeline execution, and as such you could opt to download or distribute that from there when the time comes. For testing purposes, you may want to proceed without leaving the your terminal at this moment by executing the line above.
+   :book: This `manifest.zip` file is published as an artifact during the build pipeline execution, and as such you could opt to download or distribute that from there when the time comes. For testing purposes, you may want to proceed without leaving your terminal at this moment by executing the line above.
 
 1. Validate the manifest for errors. _Optional_
 
