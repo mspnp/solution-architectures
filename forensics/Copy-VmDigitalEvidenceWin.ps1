@@ -3,9 +3,12 @@
     Performs a digitial evidence capture operation on a target VM 
 
 .DESCRIPTION
-    This is a sample code, please be sure to read https://docs.microsoft.com/azure/architecture/example-scenario/forensics/ 
-    to get all the requirements in place and adapt the code to your environment by replacing the placeholders and adding the required code blocks, before to use it.
-    Key outputs are in the script for debug reasons, remove the output after the initial tests to improve the security of your script.
+    This is sample code, please be sure to read
+    https://docs.microsoft.com/azure/architecture/example-scenario/forensics/ to get
+    all the requirements in place and adapt the code to your environment by replacing
+    the placeholders and adding the required code blocks before using it. Key outputs
+    are in the script for debug reasons, remove the output after the initial tests to
+    improve the security of your script.
     
     This is designed to be run from a Windows Hybrid Runbook Worker in response to a
     digitial evidence capture request for a target VM.  It will create disk snapshots
@@ -53,8 +56,8 @@ $destTempShare = 'PLACEHOLDER'          # The temporary file share mounted on th
 $destSAContainer = 'PLACEHOLDER'        # The name of the container within the storage account
 $destKV = 'PLACEHOLDER'                 # The name of the keyvault to store a copy of the BEK in the dest subscription
 
-$targetWindowsDir = "Z:\$destTempShare"               # The mapping path to the share that will contain the disk and its hash. NB the scripts assumes you mount Azure file share on Z:
-                                                      # if you need different mounting point, update Z: in the script or set a variable for that. 
+$targetWindowsDir = "Z:\$destTempShare"               # The mapping path to the share that will contain the disk and its hash. By default the scripts assume you mounted the Azure file share on drive Z.
+                                                      # If you need a different mounting point, update Z: in the script or set a variable for that. 
 $snapshotPrefix = (Get-Date).toString('yyyyMMddHHmm') # The prefix of the snapshot to be created
 
 #############################################################################################
@@ -68,7 +71,7 @@ if ($bios) {
     # The following doc shows a possible way to mount the Azure file share on Z:\ :
     # https://docs.microsoft.com/azure/storage/files/storage-how-to-use-files-windows
     
-    # put here your code to map the file share. Note that the file share needs to be mapped by this script, otherwise the runbook worker'll miss the right access to the share.
+    # Put your code here to map the file share. Note that the file share needs to be mapped by this script, otherwise the runbook worker will not function due to missing access to the share.
 
     ################################## Login session ############################################
     # Connect to Azure (via Managed Identity or Azure Automation's RunAs Account)

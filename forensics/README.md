@@ -1,6 +1,6 @@
 # Computer forensics chain of custody in Azure
 
-This content supports the [Computer forensics Chain of Custody in Azure](https://docs.microsoft.com/azure/architecture/example-scenario/forensics/) Azure Architecture Center article. Refer to the [article](https://docs.microsoft.com/azure/architecture/example-scenario/forensics/) for requirements and information about using these sample contents.
+This content supports the [Computer forensics Chain of Custody in Azure](https://docs.microsoft.com/azure/architecture/example-scenario/forensics/) Azure Architecture Center article. Refer to that article for requirements and information about using these sample contents.
 
 ## Contents
 
@@ -9,4 +9,4 @@ This content supports the [Computer forensics Chain of Custody in Azure](https:/
 
 ## Limitations
 
-Scripts are provided as a starting point, are not intended to be downloaded an run directly in a customer environment. Be sure to replace placeholders and adapt them to yor customer scenario.
+Scripts are provided as a starting point, are not intended to be downloaded and run without modification in your environment. Be sure to replace placeholders and adapt the scripts to your scenario.
