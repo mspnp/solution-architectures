@@ -3,6 +3,13 @@
     Performs a digitial evidence capture operation on a target VM 
 
 .DESCRIPTION
+    This is sample code, please be sure to read
+    https://docs.microsoft.com/azure/architecture/example-scenario/forensics/ to get
+    all the requirements in place and adapt the code to your environment by replacing
+    the placeholders and adding the required code blocks before using it. Key outputs
+    are in the script for debug reasons, remove the output after the initial tests to
+    improve the security of your script. 
+        
     This is designed to be run from a Linux Hybrid Runbook Worker in response to a
     digitial evidence capture request for a target VM.  It will create disk snapshots
     for all disks, copying them to immutable SOC storage, and take a SHA-256 hash and
@@ -39,8 +46,9 @@ param (
 $ErrorActionPreference = 'Stop'
 
 ######################################### SOC Constants #####################################
+# Update the following constants with the values related to your environment
 # SOC Team Evidence Resources
-$destSubId = '00112233-4455-6677-8899-aabbccddeeff'   # The subscription containing the storage account being copied to
+$destSubId = 'PLACEHOLDER'                            # The subscription containing the storage account being copied to (ex. 00112233-4455-6677-8899-aabbccddeeff)
 $destRGName = 'PLACEHOLDER'                           # The Resource Group containing the storage account being copied to
 $destSAblob = 'PLACEHOLDER'                           # The name of the storage account for BLOB
 $destSAfile = 'PLACEHOLDER'                           # The name of the storage account for FILE
@@ -62,6 +70,7 @@ if ($bios) {
     # The following doc shows a possible way to create a persistent mount point:
     # https://docs.microsoft.com/azure/storage/files/storage-how-to-use-files-linux#mount-the-azure-file-share-on-demand-with-mount
 
+    # Put your code here to map the file share. Note that the file share needs to be mapped by this script, otherwise the runbook worker will not function due to missing access to the share.
 
     ################################## Login session ############################################
     # Connect to Azure (via Managed Identity or Azure Automation's RunAs Account)
