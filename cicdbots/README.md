@@ -54,7 +54,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    cd ./solution-architectures/cicdbots
    ```
 
-1. Remove the upstrem remote
+1. Remove the upstream remote
 
    ```bash
    git remote remove upstream
