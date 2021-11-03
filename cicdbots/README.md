@@ -1,6 +1,6 @@
 # CICD pipeline for chatbots
 
-this repository is meant to guide you during the process of creating a new CICD pipeline for a simple Microsoft Teams echo chatbot application running in Azure. Executing a few command lines instructions, you are going through the process of creating your own EchoBot application by using the [Bot Framework v4](https://dev.botframework.com), the required infrastructure in Azure, and authoring an Azure DevOps Multi-Stage YAML pipeline that builds and deploy to Azure when new changea are made against your forked repository.
+This repository is meant to guide you during the process of creating a new CICD pipeline for a simple Microsoft Teams echo chatbot application running in Azure. Executing a few command lines instructions, you are going through the process of creating your own EchoBot application by using the [Bot Framework v4](https://dev.botframework.com), the required infrastructure in Azure, and authoring an Azure DevOps Multi-Stage YAML pipeline that builds and deploy to Azure when new changea are made against your forked repository.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ this repository is meant to guide you during the process of creating a new CICD 
 
    [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-1. .NET Core SDK version 3.1.
+1. Install .NET Core SDK version 3.1.
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
 1. Install [JQ](https://stedolan.github.io/jq/download/)
 1. Login GitHub Cli
@@ -48,13 +48,13 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
    :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can [install Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install#install) to run Bash by entering the following command in PowerShell or Windows Command Prompt and then restarting your machine: `wsl --install`
 
-1. navigate to the cicdbots folder
+1. Navigate to the cicdbots folder
 
    ```bash
-   cd ./solutions-architectures/cicdbots
+   cd ./solution-architectures/cicdbots
    ```
 
-1. remove the upstrem remote
+1. Remove the upstream remote
 
    ```bash
    git remote remove upstream
@@ -68,7 +68,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az login
    ```
 
-1. create the Azure Resource Group
+1. Create the Azure Resource Group
 
    ```bash
    az group create -n rg-cicd-bots -l eastus2
@@ -76,21 +76,21 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 
 ## Create the EchoBot app and its ARM templates to be deployed into Azure
 
-1. install the Microsoft Bot generators
+1. Install the Microsoft Bot generators
 
    ```bash
    dotnet new -i Microsoft.Bot.Framework.CSharp.EchoBot::4.14.1.2 --nuget-source https://botbuilder.myget.org/F/aitemplates/api/v3/index.json
    ```
 
-   :link: this step uses the .NET Core Templates for [Bot Framework v4](https://dev.botframework.com). You could choose among other more advanced  bots if you want to. For more information, please visit [https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates](https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates).
+   :link: This step uses the .NET Core Templates for [Bot Framework v4](https://dev.botframework.com). You could choose among other more advanced  bots if you want to. For more information, please visit [https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates](https://github.com/Microsoft/BotBuilder-Samples/tree/main/generators/dotnet-templates).
 
-1. generate an echo bot in your local working copy:
+1. Generate an echo bot in your local working copy:
 
    ```bash
    dotnet new echobot -n echo-bot
    ```
 
-   :bulb: optionally, you could quickly test this new bot app locally, from the [Run the EchoBot app locally](./run-the-echobot-app-locally.-_optional_) section. If not interested at this moment, please proceed with the following section.
+   :bulb: Optionally, you could quickly test this new bot app locally, from the [Run the EchoBot app locally](./run-the-echobot-app-locally.-_optional_) section. If not interested at this moment, please proceed with the following section.
 
 ## Register a new Azure Bot in your Azure subscription
 
@@ -100,294 +100,39 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    APP_SECRET=<at-least-sixteen-characters-here>
    ```
 
-1. register a new Azure AD App for the EchoBot
+1. Register a new Azure AD App for the EchoBot
 
    ```bash
    APP_DETAILS_CICD_BOTS=$(az ad app create --display-name "echobot" --password ${APP_SECRET} --available-to-other-tenants -o json) && \
    APP_ID_CICD_BOTS=$(echo $APP_DETAILS_CICD_BOTS | jq ".appId" -r)
    ```
 
-1. generate a unique name for your Azure Web App
+1. Generate a unique name for your Azure Web App
 
    ```bash
    export APP_NAME_CICD_BOTS=appsvc-echo-bot-$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
    ```
 
-1. deploy the Azure Bot resource
+1. Deploy the required Azure resources such as Azure Bot, Azure App Service Pan and App Service using the generated ARM templates
 
    ```bash
    az deployment group create -g "rg-cicd-bots" -f "./echo-bot/DeploymentTemplates/template-with-preexisting-rg.json" -p appId=${APP_ID_CICD_BOTS} appSecret=${APP_SECRET} botId="bot-echo" newAppServicePlanName="appplanweb-echo-bot" newWebAppName=${APP_NAME_CICD_BOTS} appServicePlanLocation="eastus2" -n "deploy-bot"
    ```
 
-1. execute the following to add the MS Teams channel:
+1. Execute the following to add the MS Teams channel:
 
    ```bash
    az bot msteams create -n bot-echo -g rg-cicd-bots
    ```
 
-   :eyes: in this instructions we are mixing declarative ARM temaplates with imperative commands. Typically you will want to use one or aonther in your productive environments.
+   :eyes: Instructions presented in this Reference Implmentation are mixing declarative ARM temaplates with imperative commands. Typically you will want to use one or aonther in your productive environments.
 
-## Create a new Azure DevOps project for testing the CI/CD pipelines
+## Create the EchoBot app package for Microsoft Teams
 
-1. install de Azure DevOps Azure CLI extension
-
-   ```bash
-   az extension add --upgrade -n azure-devops
-   ```
-
-   :bulb: ops team members might want to use the [Azure CLI extension](https://docs.microsoft.com/azure/devops/cli) to interact with Azure DevOps on daily basis. Alternatevely, same steps can be done from the Azure DevOps site.
-
-1. set your Azure DevOps organization name
+1. Add valid content to your manifest
 
    ```bash
-   AZURE_DEVOPS_ORG_NAME_CICD_BOTS=<your-azdevops-org-name-here>
-   ```
-
-1. set your Azure DevOps organization
-
-   ```bash
-   AZURE_DEVOPS_ORG_CICD_BOTS=https://dev.azure.com/${AZURE_DEVOPS_ORG_NAME_CICD_BOTS}/
-   ```
-
-1. login in your Azure DevOps account
-
-   ```bash
-   az devops login
-   ```
-
-   :key: you will be prompted for the PAT token, paste the saved in the prerequiistes section. Please let's take a look at the [Sign in with PAT documentation](https://docs.microsoft.com/azure/devops/cli/log-in-via-pat?view=azure-devops&tabs=windows#user-prompted-to-use-az-devops-login) for more information login.
-
-1. create a new Azure DevOps project
-
-   ```bash
-   az devops project create --name cicdbots --org $AZURE_DEVOPS_ORG_CICD_BOTS
-   ```
-
-1. create service principal to mange your Azure resources from Azure Pipelines
-
-   ```bash
-   SP_DETAILS_CICD_BOTS=$(az ad sp create-for-rbac --appId echo-bot --role="Contributor") && \
-   AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".tenant" -r) && \
-   AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
-   AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_KEY=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
-   ```
-
-1. create a new service endpoint for Azure RM
-
-   ```bash
-   az devops service-endpoint azurerm create --azure-rm-service-principal-id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID --azure-rm-subscription-id $(az account show --query id -o tsv) --azure-rm-subscription-name "$(az account show --query name -o tsv)" --azure-rm-tenant-id $AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --name ARMServiceConnection
-   ```
-
-   :book: this Service Endpoint needs to be added to your project under your Azure DevOps organization to access your Azure Subscription resource from the Azure Pipeline you are about to create.
-
-## Create a new Multi-Stage YAML pipeline for the EchoBot
-
-1. create a new yaml pipeline
-
-   ```bash
-   touch echo-bot/azure-pipelines.yml
-   ```
-
-1. trigger the pipeline when your forked repo receives a new commit into the `main` branch if and only if a file gets modified under the `echo-bot` folder structure:
-
-   ```bash
-   cat >> echo-bot/azure-pipelines.yml <<EOF
-   trigger:
-     branches:
-       include:
-       - main
-     paths:
-       include:
-       - cicdbots/echo-bot
-   EOF
-   ```
-
-1. add the first stage to build the EchoBot application:
-
-   ```bash
-   cat >> echo-bot/azure-pipelines.yml <<EOF
-
-   stages:
-   - stage: Build
-     jobs:
-     - job: EchoBotBuild
-       displayName: EchoBot Continous Integration
-       pool:
-         vmImage: 'ubuntu-20.04'
-       continueOnError: false
-       steps:
-       - task: DotNetCoreCLI@2
-         displayName: Restore
-         inputs:
-           command: restore
-           projects: cicdbots/echo-bot/echo-bot.csproj
-
-       - task: DotNetCoreCLI@2
-         displayName: Build
-         inputs:
-           projects: cicdbots/echo-bot/echo-bot.csproj
-           arguments: '--configuration release'
-
-       - task: DotNetCoreCLI@2
-         displayName: Publish
-         inputs:
-           command: publish
-           publishWebProjects: false
-           workingDirectory: cicdbots/echo-bot
-           arguments: '--configuration release --output "\$(Build.ArtifactStagingDirectory)" --no-restore'
-           zipAfterPublish: false
-   EOF
-   ```
-
-1. archive the output from the build and publish this as an artifact in your pipeline:
-
-   ```bash
-   cat >> echo-bot/azure-pipelines.yml <<EOF
-
-       - task: ArchiveFiles@2
-         displayName: 'Archive files'
-         inputs:
-           rootFolderOrFile: '\$(Build.ArtifactStagingDirectory)'
-           includeRootFolder: false
-           archiveType: zip
-           archiveFile: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
-
-       - task: PublishPipelineArtifact@1
-         displayName: 'Publish Artifact'
-         inputs:
-           targetPath: '\$(Build.ArtifactStagingDirectory)/echo-bot.zip'
-           artifactName: 'drop-\$(Build.BuildId)'
-   EOF
-   ```
-
-   :book: the artifact that is published as part of this building stage is later being used by the deployment stage
-
-1. create the final stage to deploy your recently published artifcat into the Azure Web App production slot
-
-   ```bash
-   cat >> echo-bot/azure-pipelines.yml <<EOF
-
-   - stage: Deploy
-     dependsOn:
-     - Build
-     jobs:
-     - deployment: EchoBotDeploy
-       displayName: EchoBot Continous Deployment
-       pool:
-         vmImage: 'ubuntu-20.04'
-       environment: 'echobot-prod'
-       strategy:
-         runOnce:
-           deploy:
-             steps:
-             - task: AzureRmWebAppDeployment@4
-               inputs:
-                 appType: webApp
-                 ConnectionType: AzureRM
-                 ConnectedServiceName: 'ARMServiceConnection'
-                 ResourceGroupName: 'rg-cicd-bots'
-                 WebAppName: '${APP_NAME_CICD_BOTS}'
-                 DeploymentType: runFromZip
-                 enableCustomDeployment: true
-                 packageForLinux: '$(Pipeline.Workspace)/drop-$(Build.BuildId)/echo-bot.zip'
-                 deployToSlotOrASE: true
-                 SlotName: 'production'
-   EOF
-   ```
-
-1. push the recent changes in your local working copy to your forked repo
-
-   ```bash
-   git add -u && git add echo-bot && git commit -m "add EchoBot app and pipeline for CI/CD" && git push origin main
-   ```
-
-   :book: you are adding to your own repo the `EchoBot` application code and the Multi-Stage YAML pipeline. Later you are going these new assets for CI/CD.
-
-## Create a new the Azure DevOps pipeline
-
-1. get your GitHub user name
-
-   ```bash
-   GITHUB_USER_CICD_BOTS=$(echo $(gh auth status 2>&1) | sed "s#.*as \(.*\) (.*#\1#")
-   ```
-
-1. create a [new GitHub PAT with specific scopes (admin:repo_hook, repo, user)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-token), and then set the token to an env var:
-
-   ```bash
-   AZURE_DEVOPS_EXT_GITHUB_PAT=<your-new-PAT>
-   ```
-
-1. get your forked repo github url
-
-   ```bash
-   NEW_REMOTE_URL_CICD_BOTS=https://github.com/${GITHUB_USER_CICD_BOTS}/solution-architectures.git
-   ```
-
-1. create a new github service connection in Azure DevOps. This will be needed to create a hook in your github repo that notifies Azure DevOps, so it can trigger your pipelines accordingly.
-
-   ```bash
-   AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS=$(az devops service-endpoint github create --name github-svc-conn --github-url ${NEW_REMOTE_URL_CICD_BOTS}) && \
-   AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS=$(echo $AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS | jq ".id" -r)
-   ```
-
-1. use the Multi-Stage YAML from  the previous section to create the new pipeline.
-
-   :eyes:  The command will give you the service connection options. Please, choose the one already created.
-
-   ```bash
-   az pipelines create --org $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --name echo-bot --yml-path cicdbots/echo-bot/azure-pipelines.yml --repository-type github --repository $NEW_REMOTE_URL_CICD_BOTS --branch main --service-connection $AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS --skip-first-run=true
-   ```
-
-## Create yourt Azure DevOps Pipelines Environment
-
-1. before having a first run of your pipeline, you must create an environment to host them
-
-   ```bash
-   echo '{ "name": "echobot-prod" }' > env.json && \
-   az devops invoke --area environments --resource environments --route-parameters project=cicdbots --http-method POST  --api-version 6.0-preview --in-file env.json
-   ```
-
-## Execute your pipeline to get the EchoBot app cloud-hosted in Azure.
-
-This truly simulates the production level support for a Teams app. It involves uploading your EchoBot app to your externally accessible Azure Web App.
-
-1. kick off the first run to validate all is working just fine
-
-   ```bash
-   az pipelines build queue --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --definition-name=echo-bot`
-   ```
-
-1. monitor the current pipeline execution status
-
-   ```bash
-   export COMMIT_SHA1=$(git rev-parse HEAD) && \
-   until export AZURE_PIPELINE_STATUS_CICD_BOTS=$(az pipelines build list --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query "[?sourceVersion=='${COMMIT_SHA1}']".status -o tsv 2> /dev/null) && [[ $AZURE_PIPELINE_STATUS_CICD_BOTS == "completed" ]]; do echo "Monitoring multi-stage pipeline: ${AZURE_PIPELINE_STATUS_CICD_BOTS}" && sleep 20; done
-   ```
-
-   :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource and the ARM Service Connection in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Azure DevOps Pipelines Approvals](https://docs.microsoft.com/azure/devops/pipelines/process/approvals?view=azure-devops&tabs=check-pass#approvals).
-
-1. once the deployment is completed you can now update the Azure Bot endpoint to start using the EchoBot app running on Azure Web Apps
-
-   ```bash
-   az bot update -g rg-cicd-bots -n bot-echo -e https://${APP_NAME_CICD_BOTS}.azurewebsites.net/api/messages
-   ```
-
-## Final validation
-
-You are about to execute a final validation of your EchoBot app and it will required you to create a package to upload into Teams.
-
-### Create your app package
-
-1. create the app manifest file
-
-   ```bash
-   touch manifest.json
-   ```
-
-1. add valid content to your manifest
-
-   ```bash
-   cat >> manifest.json <<EOF
+   cat > echo-bot/manifest.json <<EOF
    {
      "\$schema": "https://developer.microsoft.com/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
      "manifestVersion": "1.11",
@@ -431,63 +176,332 @@ You are about to execute a final validation of your EchoBot app and it will requ
    EOF
    ```
 
-1. zip up the contents of the teamsAppManifest folder
+1. Copy the sample icons to your `echo-bot` folder
 
    ```bash
-   zip -r manifest.zip manifest.json color.png outline.png
+   cp color.png outline.png echo-bot/
    ```
 
-1. validate it for errors.
+## Create a new Azure DevOps project for testing the CI/CD pipelines
+
+1. Install de Azure DevOps Azure CLI extension
+
+   ```bash
+   az extension add --upgrade -n azure-devops
+   ```
+
+   :bulb: Ops team members might want to use the [Azure CLI extension](https://docs.microsoft.com/azure/devops/cli) to interact with Azure DevOps on daily basis. Alternatevely, same steps can be done from the Azure DevOps site.
+
+1. Set your Azure DevOps organization name
+
+   ```bash
+   AZURE_DEVOPS_ORG_NAME_CICD_BOTS=<your-azdevops-org-name-here>
+   ```
+
+1. Set your Azure DevOps organization
+
+   ```bash
+   AZURE_DEVOPS_ORG_CICD_BOTS=https://dev.azure.com/${AZURE_DEVOPS_ORG_NAME_CICD_BOTS}/
+   ```
+
+1. Login in your Azure DevOps account
+
+   ```bash
+   az devops login
+   ```
+
+   :key: You will be prompted for the PAT token, paste the saved in the prerequiistes section. Please let's take a look at the [Sign in with PAT documentation](https://docs.microsoft.com/azure/devops/cli/log-in-via-pat?view=azure-devops&tabs=windows#user-prompted-to-use-az-devops-login) for more information login.
+
+1. Create a new Azure DevOps project
+
+   ```bash
+   az devops project create --name cicdbots --org $AZURE_DEVOPS_ORG_CICD_BOTS
+   ```
+
+1. Create service principal to mange your Azure resources from Azure Pipelines
+
+   ```bash
+   export SP_DETAILS_CICD_BOTS=$(az ad sp create-for-rbac -n echo-bot-rm --role="Contributor") && \
+   AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".tenant" -r) && \
+   AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID=$(echo $SP_DETAILS_CICD_BOTS | jq ".appId" -r) && \
+   export AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_KEY=$(echo $SP_DETAILS_CICD_BOTS | jq ".password" -r)
+   ```
+
+1. Create a new service endpoint for Azure RM
+
+   ```bash
+   az devops service-endpoint azurerm create --azure-rm-service-principal-id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID --azure-rm-subscription-id $(az account show --query id -o tsv) --azure-rm-subscription-name "$(az account show --query name -o tsv)" --azure-rm-tenant-id $AZURE_DEVOPS_EXT_AZURE_RM_TENANT_ID --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --name ARMServiceConnection
+   ```
+
+   :book: This Service Endpoint needs to be added to your project under your Azure DevOps organization to access your Azure Subscription resource from the Azure Pipeline you are about to create.
+
+## Create a new Multi-Stage YAML pipeline for the EchoBot
+
+1. Create a new yaml pipeline
+
+   ```bash
+   touch echo-bot/azure-pipelines.yml
+   ```
+
+1. Trigger the pipeline when your forked repo receives a new commit into the `main` branch if and only if a file gets modified under the `echo-bot` folder structure:
+
+   ```bash
+   cat >> echo-bot/azure-pipelines.yml <<EOF
+   trigger:
+     branches:
+       include:
+       - main
+     paths:
+       include:
+       - cicdbots/echo-bot
+   EOF
+   ```
+
+1. Add the first stage to build the EchoBot application:
+
+   ```bash
+   cat >> echo-bot/azure-pipelines.yml <<EOF
+
+   stages:
+   - stage: Build
+     jobs:
+     - job: EchoBotBuild
+       displayName: EchoBot Continous Integration
+       pool:
+         vmImage: 'ubuntu-20.04'
+       continueOnError: false
+       steps:
+       - task: DotNetCoreCLI@2
+         displayName: Restore
+         inputs:
+           command: restore
+           projects: cicdbots/echo-bot/echo-bot.csproj
+
+       - task: DotNetCoreCLI@2
+         displayName: Build
+         inputs:
+           projects: cicdbots/echo-bot/echo-bot.csproj
+           arguments: '--configuration release'
+
+       - task: DotNetCoreCLI@2
+         displayName: Publish
+         inputs:
+           command: publish
+           publishWebProjects: false
+           workingDirectory: cicdbots/echo-bot
+           arguments: '--configuration release --output "\$(Build.ArtifactStagingDirectory)" --no-restore'
+           zipAfterPublish: false
+   EOF
+   ```
+
+1. Archive the output from the build and the manifest. Then publish both as artifacts in your pipeline:
+
+   ```bash
+   cat >> echo-bot/azure-pipelines.yml <<EOF
+
+       - task: ArchiveFiles@2
+         displayName: 'Archive EchoBot app'
+         inputs:
+           rootFolderOrFile: '\$(Build.ArtifactStagingDirectory)'
+           includeRootFolder: false
+           archiveType: zip
+           archiveFile: '\$(Build.ArtifactStagingDirectory)/drop/echo-bot.zip'
+
+       - script: |
+           zip -j \$(Build.ArtifactStagingDirectory)/drop/manifest.zip cicdbots/echo-bot/manifest.json cicdbots/echo-bot/color.png cicdbots/echo-bot/outline.png
+         displayName: 'Archive EchoBot manififest'
+
+       - script: |
+           response=\$(curl --fail --silent --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary @\$(Build.ArtifactStagingDirectory)/drop/manifest.zip)
+           [[ \$(echo \$response | grep '"status":"Accepted"') != "" ]] && echo -e "\033[1;32m## [Passed] Package validation Ok \033[0m" || >&2 echo -e "\033[0;31m## [Fail] Package validation Fail: expected Accepted status - actual $response\033[0m"
+         displayName: 'Validate the Teams manifest'
+         failOnStderr: true
+
+       - task: PublishPipelineArtifact@1
+         displayName: 'Publish EchoBot app Artifact'
+         inputs:
+           targetPath: '\$(Build.ArtifactStagingDirectory)/drop'
+           archiveFilePatterns: '*.zip'
+           artifactName: 'drop-\$(Build.BuildId)'
+
+   EOF
+   ```
+
+   :book: The artifact that is published as part of this building stage is later being used by the deployment stage
+
+1. Create the final stage to deploy your recently published artifcat into the Azure Web App production slot
+
+   ```bash
+   cat >> echo-bot/azure-pipelines.yml <<EOF
+
+   - stage: Deploy
+     dependsOn:
+     - Build
+     jobs:
+     - deployment: EchoBotDeploy
+       displayName: EchoBot Continous Deployment
+       pool:
+         vmImage: 'ubuntu-20.04'
+       environment: 'echobot-prod'
+       strategy:
+         runOnce:
+           deploy:
+             steps:
+             - task: AzureRmWebAppDeployment@4
+               inputs:
+                 appType: webApp
+                 ConnectionType: AzureRM
+                 ConnectedServiceName: 'ARMServiceConnection'
+                 ResourceGroupName: 'rg-cicd-bots'
+                 WebAppName: '${APP_NAME_CICD_BOTS}'
+                 DeploymentType: runFromZip
+                 enableCustomDeployment: true
+                 packageForLinux: '\$(Pipeline.Workspace)/drop-\$(Build.BuildId)/echo-bot.zip'
+                 deployToSlotOrASE: true
+                 SlotName: 'production'
+   EOF
+   ```
+
+1. Push the recent changes in your local working copy to your forked repo
+
+   ```bash
+   git add echo-bot && git commit -m "add EchoBot app and pipeline for CI/CD" && git push origin master:main
+   ```
+
+   :book: You are adding to your own repo the `EchoBot` application code and the Multi-Stage YAML pipeline. Later you are going these new assets for CI/CD.
+
+## Create a new the Azure DevOps pipeline
+
+1. Get your GitHub user name
+
+   ```bash
+   GITHUB_USER_CICD_BOTS=$(echo $(gh auth status 2>&1) | sed "s#.*as \(.*\) (.*#\1#")
+   ```
+
+1. Create a [new GitHub PAT with specific scopes (admin:repo_hook, repo, user)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-token), and then set the token to an env var:
+
+   ```bash
+   AZURE_DEVOPS_EXT_GITHUB_PAT=<your-new-PAT>
+   ```
+
+1. Get your forked repo github url
+
+   ```bash
+   NEW_REMOTE_URL_CICD_BOTS=https://github.com/${GITHUB_USER_CICD_BOTS}/solution-architectures.git
+   ```
+
+1. Create a new github service connection in Azure DevOps. This will be needed to create a hook in your github repo that notifies Azure DevOps, so it can trigger your pipelines accordingly.
+
+   ```bash
+   AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS=$(az devops service-endpoint github create --name github-svc-conn --github-url ${NEW_REMOTE_URL_CICD_BOTS}) && \
+   AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS=$(echo $AZURE_DEVOPS_SE_EXT_GITHUB_OUTPUT_CICD_BOTS | jq ".id" -r)
+   ```
+
+1. Use the Multi-Stage YAML from  the previous section to create the new pipeline.
+
+   :eyes:  The command will give you the service connection options. Please, choose the one already created.
+
+   ```bash
+   az pipelines create --org $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --name echo-bot --yml-path cicdbots/echo-bot/azure-pipelines.yml --repository-type github --repository $NEW_REMOTE_URL_CICD_BOTS --branch main --service-connection $AZURE_DEVOPS_SE_EXT_GITHUB_ID_CICD_BOTS --skip-first-run=true
+   ```
+
+## Create your Azure DevOps Pipelines Environment
+
+1. Before having a first run of your pipeline, you must create an environment to host them
+
+   ```bash
+   echo '{ "name": "echobot-prod" }' > env.json && \
+   az devops invoke --area environments --resource environments --route-parameters project=cicdbots --http-method POST  --api-version 6.0-preview --in-file env.json
+   ```
+
+## Execute your pipeline to get the EchoBot app cloud-hosted in Azure.
+
+This truly simulates the production level support for a Teams app. It involves uploading your EchoBot app to your externally accessible Azure Web App.
+
+1. Kick off the first run to validate all is working just fine
+
+   ```bash
+   az pipelines build queue --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --definition-name=echo-bot
+   ```
+
+1. Monitor the current pipeline execution status
+
+   ```bash
+   export COMMIT_SHA1=$(git rev-parse HEAD) && \
+   until export AZURE_PIPELINE_STATUS_CICD_BOTS=$(az pipelines build list --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query "[?sourceVersion=='${COMMIT_SHA1}']".status -o tsv 2> /dev/null) && [[ $AZURE_PIPELINE_STATUS_CICD_BOTS == "completed" ]]; do echo "Monitoring multi-stage pipeline: ${AZURE_PIPELINE_STATUS_CICD_BOTS}" && sleep 20; done
+   ```
+
+   :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource and the ARM Service Connection in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Pipeline permissions](https://docs.microsoft.com/en-us/azure/devops/pipelines/security/resources?view=azure-devops#pipeline-permissions).
+
+1. Once the deployment is completed you can now update the Azure Bot endpoint to start using the EchoBot app running on Azure Web Apps
+
+   ```bash
+   az bot update -g rg-cicd-bots -n bot-echo -e https://${APP_NAME_CICD_BOTS}.azurewebsites.net/api/messages
+   ```
+
+## Final validation
+
+You are about to execute a final validation of your EchoBot app and it will required you to create a package to upload into Teams.
+
+### Upload your app in Microsoft Teams
+
+1. [Enable custom app uploading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) in Teams.
+1. Open Microsoft Teams
+1. Zip up the manifest contents
+
+   ```bash
+   zip -j manifest.zip ./echo-bot/manifest.json ./echo-bot/color.png ./echo-bot/outline.png
+   ```
+
+   :book: This `manifest.zip` file is published as an artifact during the build pipeline execution, and as such you could opt to download or distribute that from there when the time comes. For testing purposes, you may want to proceed without leaving your terminal at this moment by executing the line above.
+
+1. Validate the manifest for errors. _Optional_
+
+   :book: The following validation is performed during the build pipeline execution. You may want to repeat this here for the first time to understand the mechanics of this proccess. You can see a more readable report by uploading your manifest at [https://dev.teams.microsoft.com/](https://dev.teams.microsoft.com/).
 
    ```bash
    curl --location --request POST 'https://packageacceptance.omex.office.net/api/check?culture=en&mode=verifyandextract&packageType=msteams&verbose=true' --header 'Content-Type: application/zip' --data-binary '@./manifest.zip'
    ```
 
-  :white_check_mark: check the status in the response is `Accepted`. You can see a more readable report by uploading your manifest at [https://dev.teams.microsoft.com/](https://dev.teams.microsoft.com/).
+   :white_check_mark: Check the status in the response is `Accepted`.
 
-### Upload your app in Microsoft Teams
+1. Go to the `Apps` view and click "Upload a custom app". Then select the `manifest.zip`.
 
-1. [Enable custom app uploading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) in Teams.
-1. open Microsoft Teams
-1. go to the `Apps` view and click "Upload a custom app". Then select the `manifest.zip`.
-
-:link: For troubleshooting of further instructions, please take a at [Upload your app](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
+   :link: For troubleshooting of further instructions, please take a at [Upload your app](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
 
 ### Send any message to be echo(ed)
 
-1. send any message and wait for the echo reply
+1. Send any message and wait for the echo reply
 
-:eyes: Please note that now it is your live version of the EchoBot app running over Azure Web App service that you just recently deployed from code using Azure Pipelines
-
-:book: Now you could make any further changes over your EchoBot app, and that will be built and continously deployed.
+   :book: Now you could make any further changes over your EchoBot app, and push them to your repository. As a consequence, changes are continously ingrated and deployed.
 
 ## Clean up
 
-1. uninstall the EchoBot template
+1. Uninstall the EchoBot template
 
    ```bash
    dotnet new -u Microsoft.Bot.Framework.CSharp.EchoBot
    ```
 
-1. delete the Azure AD app you registered for the Echo Bot application:
+1. Delete the Azure AD app you registered for the Echo Bot application:
 
    ```bash
    az ad app delete --id $APP_ID_CICD_BOTS
    ```
 
-1. delete the Azure AD service principal you created for ARM
+1. Delete the Azure AD service principal you created for ARM
 
    ```bash
    az ad sp delete --id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID
    ```
 
-1. delete the Azure resource group
+1. Delete the Azure resource group
 
    ```bash
    az group delete -n rg-cicd-bots -y
    ```
 
-1. delete the Azure DevOps project
+1. Delete the Azure DevOps project
 
    ```bash
    az devops project delete --id $(az devops project show --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query id -o tsv) --org $AZURE_DEVOPS_ORG_CICD_BOTS -y
@@ -495,7 +509,7 @@ You are about to execute a final validation of your EchoBot app and it will requ
 
 ## Final notes
 
-if you want to learn how to publish your app, please visit the [Publish your app to your org](https://docs.microsoft.com/en-us/MicrosoftTeams/tenant-apps-catalog-teams?toc=/microsoftteams/platform/toc.json&bc=/MicrosoftTeams/breadcrumb/toc.json) or [Publish your app to the store](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish) based on your need.
+If you want to learn how to publish your app, please visit the [Publish your app to your org](https://docs.microsoft.com/en-us/MicrosoftTeams/tenant-apps-catalog-teams?toc=/microsoftteams/platform/toc.json&bc=/MicrosoftTeams/breadcrumb/toc.json) or [Publish your app to the store](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish) based on your need.
 
 ---
 
@@ -503,21 +517,21 @@ if you want to learn how to publish your app, please visit the [Publish your app
 
 This involves running the app locally in tunneling software. This permits you to easily run and debug your app within the Teams client.
 
-1. install [ngrok](https://ngrok.com/).
-1. navigate to `./solutions-architectures/cicdbots/echo-bot`
-1. configure the `appsettings.json` using new bot client id and password
+1. Install [ngrok](https://ngrok.com/).
+1. Navigate to `./solutions-architectures/cicdbots/echo-bot`
+1. Configure the `appsettings.json` using new bot client id and password
 
    ```bash
    sed -i 's/"MicrosoftAppId": ""/"MicrosoftAppId": "'"$APP_ID_CICD_BOTS"'"/#g'  appsettings.json && \
    sed -i 's/"MicrosoftAppPassword": ""/"MicrosoftAppPassword": "'"$APP_SECRET"'"/g' appsettings.json
    ```
 
-1. execute `ngrok http -host-header=rewrite 3978`
-1. open another terminal window, and update the Azure Bot endpoint with the `ngrok` generated `https` forwarding url:
+1. Execute `ngrok http -host-header=rewrite 3978`
+1. Open another terminal window, and update the Azure Bot endpoint with the `ngrok` generated `https` forwarding url:
 
    ```bash
    az bot update -g rg-cicd-bots -n bot-echo -e https://<unique-identifier>.ngrok.io/api/messages
    ```
 
-1. execute `dotnet run`
-1. navigate to the [Final validation section](./final-validation) to validate the app is working as expected.
+1. Execute `dotnet run`
+1. Navigate to the [Final validation section](#final-validation) to validate the app is working as expected.
