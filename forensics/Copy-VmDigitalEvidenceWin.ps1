@@ -56,7 +56,7 @@ $destTempShare = 'PLACEHOLDER'          # The temporary file share mounted on th
 $destSAContainer = 'PLACEHOLDER'        # The name of the container within the storage account
 $destKV = 'PLACEHOLDER'                 # The name of the keyvault to store a copy of the BEK in the dest subscription
 
-$targetWindowsDir = "Z:\$destTempShare"               # The mapping path to the share that will contain the disk and its hash. By default the scripts assume you mounted the Azure file share on drive Z.
+$targetWindowsDir = "Z:\"               # The mapping path to the share that will contain the disk and its hash. By default the scripts assume you mounted the Azure file share on drive Z.
                                                       # If you need a different mounting point, update Z: in the script or set a variable for that. 
 $snapshotPrefix = (Get-Date).toString('yyyyMMddHHmm') # The prefix of the snapshot to be created
 
@@ -133,6 +133,7 @@ if ($bios) {
     Write-Output "OS Disk Encryption Secret URL: $BEKurl"
     Write-Output "#################################"
     if ($BEKurl) {
+        Get-AzSubscription -SubscriptionId $SubscriptionId | Set-AzContext
         $sourcekv = $BEKurl.Split("/")
         $BEK = Get-AzKeyVaultSecret -VaultName  $sourcekv[2].split(".")[0] -Name $sourcekv[4] -Version $sourcekv[5]
         Write-Output "Key value: $BEK"
@@ -148,7 +149,7 @@ if ($bios) {
     $secret = ConvertTo-SecureString -String $hash -AsPlainText -Force
     Set-AzKeyVaultSecret -VaultName $destKV -Name "$SnapshotName-sha256" -SecretValue $secret -ContentType "text/plain"
     Get-AzSubscription -SubscriptionId $destSubId | Set-AzContext
-    $targetStorageContextFile = (Get-AzStorageAccount -ResourceGroupName $destRGShare -Name $destSAfile).Context
+    $targetStorageContextFile = (Get-AzStorageAccount -ResourceGroupName $destRGName -Name $destSAfile).Context
     Remove-AzStorageFile -ShareName $destTempShare -Path $SnapshotName -Context $targetStorageContextFile
 
 
@@ -193,10 +194,12 @@ if ($bios) {
         Write-Output "Disk Encryption Secret URL: $BEKurl"
         Write-Output "#################################"
         if ($BEKurl) {
+            Get-AzSubscription -SubscriptionId $SubscriptionId | Set-AzContext
             $sourcekv = $BEKurl.Split("/")
             $BEK = Get-AzKeyVaultSecret -VaultName  $sourcekv[2].split(".")[0] -Name $sourcekv[4] -Version $sourcekv[5]
             Write-Output "Key value: $BEK"
             Write-Output "Secret name: $dsnapshotName"
+            Get-AzSubscription -SubscriptionId $destSubId | Set-AzContext
             Set-AzKeyVaultSecret -VaultName $destKV -Name $dsnapshotName -SecretValue $BEK.SecretValue -ContentType "BEK" -Tag $BEK.Tags
         }
         else {
@@ -208,7 +211,7 @@ if ($bios) {
         Write-Output "#################################"
         $Secret = ConvertTo-SecureString -String $dhash -AsPlainText -Force
         Set-AzKeyVaultSecret -VaultName $destKV -Name "$dsnapshotName-sha256" -SecretValue $Secret -ContentType "text/plain"
-        $targetStorageContextFile = (Get-AzStorageAccount -ResourceGroupName $destRGShare -Name $destSAfile).Context
+        $targetStorageContextFile = (Get-AzStorageAccount -ResourceGroupName $destRGName -Name $destSAfile).Context
         Remove-AzStorageFile -ShareName $destTempShare -Path $dsnapshotName -Context $targetStorageContextFile
     }
 
@@ -219,6 +222,7 @@ if ($bios) {
         Get-AzStorageBlobCopyState -Blob "$dsnapshotName.vhd" -Container $destSAContainer -Context $targetStorageContextBlob -WaitForComplete
     }
 
+    Get-AzSubscription -SubscriptionId $SubscriptionId | Set-AzContext
     Revoke-AzSnapshotAccess -ResourceGroupName $ResourceGroupName -SnapshotName $snapshotName
     Remove-AzSnapshot -ResourceGroupName $ResourceGroupName -SnapshotName $snapshotname -Force
     foreach ($dsnapshotName in $dsnapshotList) {
