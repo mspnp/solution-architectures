@@ -528,7 +528,7 @@ This involves running the app locally in tunneling software. This permits you to
    sed -i 's/"MicrosoftAppPassword": ""/"MicrosoftAppPassword": "'"$APP_SECRET"'"/g' appsettings.json
    ```
 
-1. Execute `ngrok http -host-header=rewrite 3978`
+1. Execute `ngrok http --host-header=rewrite 3978`
 1. Open another terminal window, and update the Azure Bot endpoint with the `ngrok` generated `https` forwarding url:
 
    ```bash
