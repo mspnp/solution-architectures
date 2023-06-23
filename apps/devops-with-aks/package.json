@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "mongodb": "^3.0.1",
-    "npm": "^6.14.6"
+    "npm": "^9.6.5"
   }
 }
