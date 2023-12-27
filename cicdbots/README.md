@@ -33,7 +33,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 | Object                                    | Purpose                                                 |
 |-------------------------------------------|---------------------------------------------------------|
 | An Azure App Service                      | This is the managed Web Application service where the Echo Bot application is going to be published. |
-| An Echo Bot Service Principal             | This is the representation in your Azure AD of the Echo Bot application. |
+| An Echo Bot Service Principal             | This is the representation in your Microsoft Entra ID tenant of the Echo Bot application. |
 | A new Azure DevOps project                | CI/CD pipelines are going to be created under this new project. |
 | Multi-Stage YAML pipeline                 | A multi-stage YAML pipeline capable of building the Echo Bot application on top of changed on its folder and deploy the artifacts being created to the Web App service. |
 | An ARM Service Principal                  | This is a Service Principal with `Contributor` RBAC role in your Azure Subscription and is going to employed during the Multi-Stage YAML pipeline execution to manage your Azure Resources. |
@@ -102,7 +102,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    APP_SECRET=<at-least-sixteen-characters-here>
    ```
 
-1. Register a new Azure AD App for the EchoBot
+1. Register a new Microsoft Entra ID App for the EchoBot
 
    ```bash
    APP_DETAILS_CICD_BOTS=$(az ad app create --display-name "echobot" --password ${APP_SECRET} --available-to-other-tenants -o json) && \
@@ -485,13 +485,13 @@ You are about to execute a final validation of your EchoBot app and it will requ
    dotnet new -u Microsoft.Bot.Framework.CSharp.EchoBot
    ```
 
-1. Delete the Azure AD app you registered for the Echo Bot application:
+1. Delete the Microsoft Entra ID app you registered for the Echo Bot application:
 
    ```bash
    az ad app delete --id $APP_ID_CICD_BOTS
    ```
 
-1. Delete the Azure AD service principal you created for ARM
+1. Delete the Microsoft Entra ID service principal you created for ARM
 
    ```bash
    az ad sp delete --id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID
