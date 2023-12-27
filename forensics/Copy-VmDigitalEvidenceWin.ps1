@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     This is sample code, please be sure to read
-    https://docs.microsoft.com/azure/architecture/example-scenario/forensics/ to get
+    https://learn.microsoft.com/azure/architecture/example-scenario/forensics/ to get
     all the requirements in place and adapt the code to your environment by replacing
     the placeholders and adding the required code blocks before using it. Key outputs
     are in the script for debug reasons, remove the output after the initial tests to
@@ -17,13 +17,13 @@
 
     This script depends on Az.Accounts, Az.Compute, Az.Storage, and Az.KeyVault being 
     imported in your Azure Automation account.
-    See: https://docs.microsoft.com/en-us/azure/automation/az-modules
+    See: https://learn.microsoft.com/azure/automation/az-modules
 
 .EXAMPLE
     Copy-VmDigitialEvidence -SubscriptionId ffeeddcc-bbaa-9988-7766-554433221100 -ResourceGroupName rg-finance-vms -VirtualMachineName vm-workstation-001
 
 .LINK
-    https://docs.microsoft.com/azure/architecture/example-scenario/forensics/
+    https://learn.microsoft.com/azure/architecture/example-scenario/forensics/
 #>
 
 param (
@@ -69,7 +69,7 @@ if ($bios) {
     ################################## Mounting fileshare #######################################
     # The Storage account also hosts an Azure file share to use as a temporary repository for calculating the snapshot's SHA-256 hash value.
     # The following doc shows a possible way to mount the Azure file share on Z:\ :
-    # https://docs.microsoft.com/azure/storage/files/storage-how-to-use-files-windows
+    # https://learn.microsoft.com/azure/storage/files/storage-how-to-use-files-windows
     
     # Put your code here to map the file share. Note that the file share needs to be mapped by this script, otherwise the runbook worker will not function due to missing access to the share.
 
