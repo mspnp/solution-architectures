@@ -2,20 +2,20 @@
 
 This repository is meant to guide you during the process of creating a new CI/CD pipeline for a simple Microsoft Teams echo chatbot application running in Azure. Executing a few command lines instructions, you are going through the process of creating your own EchoBot application by using the [Bot Framework v4](https://dev.botframework.com), the required infrastructure in Azure, and authoring an Azure DevOps Multi-Stage YAML pipeline that builds and deploy to Azure when new changea are made against your forked repository.
 
-This repository supports an article on the [Azure Architecture Center](https://aka.ms/architecture) called [Build a CI/CD pipeline for chatbots with ARM templates](https://docs.microsoft.com/azure/architecture/example-scenario/apps/devops-cicd-chatbot). For added context about this secnario it is recommended that you review that article before proceeding below.
+This repository supports an article on the [Azure Architecture Center](https://aka.ms/architecture) called [Build a CI/CD pipeline for chatbots with ARM templates](https://learn.microsoft.com/azure/architecture/example-scenario/apps/devops-cicd-chatbot). For added context about this secnario it is recommended that you review that article before proceeding below.
 
 ## Prerequisites
 
 1. An Azure subscription. You can [open an account for free](https://azure.microsoft.com/free).
 1. An Azure DevOps account. You can [start free](https://azure.microsoft.com/services/devops/).
 1. Microsoft Teams. [Sign up for free](https://www.microsoft.com/microsoft-teams)
-1. Create an Azure DevOps PAT (Personal Access Token), see [Use personal access tokens](https://docs.microsoft.com/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops#create-a-pat).
+1. Create an Azure DevOps PAT (Personal Access Token), see [Use personal access tokens](https://learn.microsoft.com/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops#create-a-pat).
 
    :important: ensure your PAT expires in just a few days, and give it the least priviledges by selecting the specific scope this token needs to be authorized for.  Build: `Read & execute`  Environment: `Read & manage`  Release: `Read, write, execute & manage`  Project and Team: `Read, write & manage`  Service Connections: `Read, query & manage`.  Finally, ensure you save the generated PAT in a secure maner until you use this a few steps below.
 
-1. Latest [Azure CLI installed](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
+1. Latest [Azure CLI installed](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
 
-   [![Launch Azure Cloud Shell](https://docs.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
+   [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
 1. Install .NET Core SDK version 3.1.
 1. Install [GitHub CLI](https://github.com/cli/cli/#installation)
@@ -33,7 +33,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
 | Object                                    | Purpose                                                 |
 |-------------------------------------------|---------------------------------------------------------|
 | An Azure App Service                      | This is the managed Web Application service where the Echo Bot application is going to be published. |
-| An Echo Bot Service Principal             | This is the representation in your Azure AD of the Echo Bot application. |
+| An Echo Bot Service Principal             | This is the representation in your Microsoft Entra ID tenant of the Echo Bot application. |
 | A new Azure DevOps project                | CI/CD pipelines are going to be created under this new project. |
 | Multi-Stage YAML pipeline                 | A multi-stage YAML pipeline capable of building the Echo Bot application on top of changed on its folder and deploy the artifacts being created to the Web App service. |
 | An ARM Service Principal                  | This is a Service Principal with `Contributor` RBAC role in your Azure Subscription and is going to employed during the Multi-Stage YAML pipeline execution to manage your Azure Resources. |
@@ -48,7 +48,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    gh repo fork mspnp/solution-architectures --clone=true --remote=false
    ```
 
-   :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can [install Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/install#install) to run Bash by entering the following command in PowerShell or Windows Command Prompt and then restarting your machine: `wsl --install`
+   :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can [install Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/install#install) to run Bash by entering the following command in PowerShell or Windows Command Prompt and then restarting your machine: `wsl --install`
 
 1. Navigate to the cicdbots folder
 
@@ -102,7 +102,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    APP_SECRET=<at-least-sixteen-characters-here>
    ```
 
-1. Register a new Azure AD App for the EchoBot
+1. Register a new Microsoft Entra ID App for the EchoBot
 
    ```bash
    APP_DETAILS_CICD_BOTS=$(az ad app create --display-name "echobot" --password ${APP_SECRET} --available-to-other-tenants -o json) && \
@@ -192,7 +192,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az extension add --upgrade -n azure-devops
    ```
 
-   :bulb: Ops team members might want to use the [Azure CLI extension](https://docs.microsoft.com/azure/devops/cli) to interact with Azure DevOps on daily basis. Alternatevely, same steps can be done from the Azure DevOps site.
+   :bulb: Ops team members might want to use the [Azure CLI extension](https://learn.microsoft.com/azure/devops/cli) to interact with Azure DevOps on daily basis. Alternatevely, same steps can be done from the Azure DevOps site.
 
 1. Set your Azure DevOps organization name
 
@@ -212,7 +212,7 @@ Following the steps below will result in an Azure resources as well as Azure Dev
    az devops login
    ```
 
-   :key: You will be prompted for the PAT token, paste the saved in the prerequiistes section. Please let's take a look at the [Sign in with PAT documentation](https://docs.microsoft.com/azure/devops/cli/log-in-via-pat?view=azure-devops&tabs=windows#user-prompted-to-use-az-devops-login) for more information login.
+   :key: You will be prompted for the PAT token, paste the saved in the prerequiistes section. Please let's take a look at the [Sign in with PAT documentation](https://learn.microsoft.com/azure/devops/cli/log-in-via-pat?view=azure-devops&tabs=windows#user-prompted-to-use-az-devops-login) for more information login.
 
 1. Create a new Azure DevOps project
 
@@ -433,7 +433,7 @@ This truly simulates the production level support for a Teams app. It involves u
    until export AZURE_PIPELINE_STATUS_CICD_BOTS=$(az pipelines build list --organization $AZURE_DEVOPS_ORG_CICD_BOTS --project cicdbots --query "[?sourceVersion=='${COMMIT_SHA1}']".status -o tsv 2> /dev/null) && [[ $AZURE_PIPELINE_STATUS_CICD_BOTS == "completed" ]]; do echo "Monitoring multi-stage pipeline: ${AZURE_PIPELINE_STATUS_CICD_BOTS}" && sleep 20; done
    ```
 
-   :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource and the ARM Service Connection in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Pipeline permissions](https://docs.microsoft.com/azure/devops/pipelines/security/resources?view=azure-devops#pipeline-permissions).
+   :warning: The first time you execute your pipeline, Azure Pipelines will request you to approve the access the new associated environment resource and the ARM Service Connection in the Deploy stage. Please navigate to the your pipeline, and approve this from the `Azure DevOps` -> `Pipelines` -> `echo-bot`. For more information, please take a look at the [Pipeline permissions](https://learn.microsoft.com/azure/devops/pipelines/security/resources?view=azure-devops#pipeline-permissions).
 
 1. Once the deployment is completed you can now update the Azure Bot endpoint to start using the EchoBot app running on Azure Web Apps
 
@@ -447,7 +447,7 @@ You are about to execute a final validation of your EchoBot app and it will requ
 
 ### Upload your app in Microsoft Teams
 
-1. [Enable custom app uploading](https://docs.microsoft.com/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) in Teams.
+1. [Enable custom app uploading](https://learn.microsoft.com/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) in Teams.
 1. Open Microsoft Teams
 1. Zip up the manifest contents
 
@@ -469,7 +469,7 @@ You are about to execute a final validation of your EchoBot app and it will requ
 
 1. Go to the `Apps` view and click "Upload a custom app". Then select the `manifest.zip`.
 
-   :link: For troubleshooting of further instructions, please take a look at [Upload your app](https://docs.microsoft.com/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
+   :link: For troubleshooting of further instructions, please take a look at [Upload your app](https://learn.microsoft.com/microsoftteams/platform/concepts/deploy-and-publish/apps-upload#upload-your-app)
 
 ### Send any message to be echo(ed)
 
@@ -485,13 +485,13 @@ You are about to execute a final validation of your EchoBot app and it will requ
    dotnet new -u Microsoft.Bot.Framework.CSharp.EchoBot
    ```
 
-1. Delete the Azure AD app you registered for the Echo Bot application:
+1. Delete the Microsoft Entra ID app you registered for the Echo Bot application:
 
    ```bash
    az ad app delete --id $APP_ID_CICD_BOTS
    ```
 
-1. Delete the Azure AD service principal you created for ARM
+1. Delete the Microsoft Entra ID service principal you created for ARM
 
    ```bash
    az ad sp delete --id $AZURE_DEVOPS_EXT_AZURE_RM_SERVICE_PRINCIPAL_ID
@@ -511,7 +511,7 @@ You are about to execute a final validation of your EchoBot app and it will requ
 
 ## Final notes
 
-If you want to learn how to publish your app, please visit the [Publish your app to your org](https://docs.microsoft.com/MicrosoftTeams/tenant-apps-catalog-teams?toc=/microsoftteams/platform/toc.json&bc=/MicrosoftTeams/breadcrumb/toc.json) or [Publish your app to the store](https://docs.microsoft.com/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish) based on your need.
+If you want to learn how to publish your app, please visit the [Publish your app to your org](https://learn.microsoft.com/MicrosoftTeams/tenant-apps-catalog-teams?toc=/microsoftteams/platform/toc.json&bc=/MicrosoftTeams/breadcrumb/toc.json) or [Publish your app to the store](https://learn.microsoft.com/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish) based on your need.
 
 ---
 
